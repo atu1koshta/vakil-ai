@@ -1,3 +1,19 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
 backend/.env
 backend/credentials/
+
+# Pipeline artifacts
+backend/output/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Data
+data/
+
+.DS_Store
 credentials/*
