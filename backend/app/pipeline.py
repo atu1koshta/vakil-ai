@@ -1,4 +1,4 @@
-"""Process a judgment PDF end-to-end (Phase 1: stops at chunks) and persist artifacts.
+"""Process a judgment PDF end-to-end and persist artifacts.
 
 Output layout per document:
   output/<doc-slug>/
@@ -7,19 +7,30 @@ Output layout per document:
     metadata.json
     chunks.json
     chunks/chunk_000.txt ...
+
+Idempotency (registry.py): the PDF's sha256 is looked up in the documents
+catalog first — same bytes already processed by the CURRENT pipeline version
+=> cached result loaded from output/, docling never runs. `force=True` or a
+PIPELINE_VERSION bump re-runs the real pipeline.
 """
 
+import hashlib
 import json
 import re
 import shutil
 from pathlib import Path
 
+from . import registry
 from .chunker import chunk_markdown, extract_tables
 from .metadata import extract_metadata
-from .models import ChunkStats, ProcessResult
+from .models import ChunkStats, DocumentMetadata, ProcessResult
 from .parser import parse_pdf
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
+
+# Bump when any processing step (parser/chunker/metadata) improves —
+# previously processed docs become stale; `python -m app.reprocess` redoes them.
+PIPELINE_VERSION = 1
 
 
 def slugify(name: str) -> str:
@@ -28,7 +39,58 @@ def slugify(name: str) -> str:
     return slug[:80] or "document"
 
 
-def process_pdf(pdf_path: Path, original_name: str) -> ProcessResult:
+def load_result(doc_id: str, *, cached: bool, pipeline_version: int) -> ProcessResult:
+    """Rebuild a ProcessResult from persisted artifacts — no pipeline run."""
+    doc_dir = OUTPUT_DIR / doc_id
+    data = json.loads((doc_dir / "chunks.json").read_text())
+    return ProcessResult(
+        doc_id=doc_id,
+        metadata=DocumentMetadata(**json.loads((doc_dir / "metadata.json").read_text())),
+        markdown=(doc_dir / "markdown.md").read_text(),
+        chunks=data["chunks"],
+        stats=ChunkStats(**data["stats"]),
+        cached=cached,
+        pipeline_version=pipeline_version,
+    )
+
+
+def process_pdf(pdf_path: Path, original_name: str, *, force: bool = False) -> ProcessResult:
+    sha256 = hashlib.sha256(pdf_path.read_bytes()).hexdigest()
+    reg = registry.connect()
+    existing = registry.find_by_hash(reg, sha256)
+    if (
+        existing is not None
+        and not force
+        and existing["status"] == "processed"
+        and existing["pipeline_version"] >= PIPELINE_VERSION
+        and (OUTPUT_DIR / existing["doc_id"] / "chunks.json").exists()
+    ):
+        return load_result(
+            existing["doc_id"], cached=True, pipeline_version=existing["pipeline_version"]
+        )
+
+    doc_id_for_failure = slugify(original_name)
+    try:
+        result = _run_pipeline(pdf_path, original_name)
+    except Exception as e:
+        registry.record_failed(
+            reg, doc_id=doc_id_for_failure, source_name=original_name,
+            sha256=sha256, pipeline_version=PIPELINE_VERSION, error=str(e),
+        )
+        raise
+    registry.record_processed(
+        reg,
+        doc_id=result.doc_id,
+        source_name=original_name,
+        sha256=sha256,
+        pipeline_version=PIPELINE_VERSION,
+        chunk_count=result.stats.total_chunks,
+        total_tokens=result.stats.total_tokens,
+    )
+    return result
+
+
+def _run_pipeline(pdf_path: Path, original_name: str) -> ProcessResult:
     markdown = parse_pdf(pdf_path)
     # Metadata sees the original text (citation tables help it); chunks don't.
     metadata = extract_metadata(markdown, original_name)
@@ -48,7 +110,8 @@ def process_pdf(pdf_path: Path, original_name: str) -> ProcessResult:
 
     doc_id = slugify(original_name)
     result = ProcessResult(
-        doc_id=doc_id, metadata=metadata, markdown=markdown, chunks=chunks, stats=stats
+        doc_id=doc_id, metadata=metadata, markdown=markdown, chunks=chunks, stats=stats,
+        pipeline_version=PIPELINE_VERSION,
     )
     _persist(result, pdf_path, tables)
     return result

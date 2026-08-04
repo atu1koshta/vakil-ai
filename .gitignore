@@ -8,6 +8,10 @@ backend/credentials/
 # Pipeline artifacts
 backend/output/
 
+# Eval artifacts — selection, eval_set, results stay in git; bulky sources don't
+backend/evals/pdfs/
+backend/evals/text/
+
 # Node
 frontend/node_modules/
 frontend/dist/
@@ -18,3 +22,4 @@ data/
 .DS_Store
 credentials/*
 backend/vectors.db
+backend/vakil.db

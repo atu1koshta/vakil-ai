@@ -47,17 +47,20 @@ def search(q: str, k: int = 5) -> list[dict]:
 
 
 @app.post("/process-document", response_model=ProcessResult)
-async def process_document(file: UploadFile, background_tasks: BackgroundTasks) -> ProcessResult:
+async def process_document(
+    file: UploadFile, background_tasks: BackgroundTasks, force: bool = False
+) -> ProcessResult:
     if not (file.filename or "").lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     fd, tmp_path = tempfile.mkstemp(suffix=".pdf")
     try:
         with os.fdopen(fd, "wb") as out:
             out.write(await file.read())
-        result = process_pdf(Path(tmp_path), file.filename)
-        # embedding takes ~1 min/doc — run after the response is sent; poll
-        # /documents/{doc_id}/index-status for completion
-        background_tasks.add_task(index_doc_by_id, result.doc_id)
+        result = process_pdf(Path(tmp_path), file.filename, force=force)
+        if not result.cached:
+            # embedding takes ~1 min/doc — run after the response is sent; poll
+            # /documents/{doc_id}/index-status for completion
+            background_tasks.add_task(index_doc_by_id, result.doc_id)
         return result
     except HTTPException:
         raise
@@ -115,7 +118,9 @@ def drive_files() -> list[DriveFile]:
 
 
 @app.post("/drive/process/{file_id}", response_model=ProcessResult)
-def drive_process(file_id: str, background_tasks: BackgroundTasks) -> ProcessResult:
+def drive_process(
+    file_id: str, background_tasks: BackgroundTasks, force: bool = False
+) -> ProcessResult:
     try:
         tmp_path, name = drive.download_pdf(file_id)
     except drive.DriveNotConfigured as exc:
@@ -123,8 +128,9 @@ def drive_process(file_id: str, background_tasks: BackgroundTasks) -> ProcessRes
     except drive.DriveNotAuthorized as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
     try:
-        result = process_pdf(tmp_path, name)
-        background_tasks.add_task(index_doc_by_id, result.doc_id)
+        result = process_pdf(tmp_path, name, force=force)
+        if not result.cached:
+            background_tasks.add_task(index_doc_by_id, result.doc_id)
         return result
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Processing failed: {exc}") from exc
@@ -135,6 +141,36 @@ def drive_process(file_id: str, background_tasks: BackgroundTasks) -> ProcessRes
 @app.get("/documents/{doc_id}/index-status")
 def document_index_status(doc_id: str) -> dict:
     return index_status(doc_id)
+
+
+@app.post("/drive/sync")
+def drive_sync_start(background_tasks: BackgroundTasks) -> dict:
+    """Process EVERY PDF in the Drive folder, sequentially, in the background.
+    Resumable: done files are skipped, failed/pending retried — safe to call
+    again any time (including after a server restart mid-sweep)."""
+    from . import drive_sync
+
+    if not drive.is_authorized():
+        raise HTTPException(status_code=401, detail="Drive not connected.")
+    if not drive_sync.start():
+        raise HTTPException(status_code=409, detail="Sync already running.")
+    background_tasks.add_task(drive_sync.run_sync)
+    return {"started": True}
+
+
+@app.get("/drive/sync/status")
+def drive_sync_status() -> dict:
+    from . import drive_sync
+
+    return drive_sync.status()
+
+
+@app.get("/documents")
+def list_documents() -> list[dict]:
+    """The processed-documents catalog (registry)."""
+    from . import registry
+
+    return [dict(r) for r in registry.list_documents(registry.connect())]
 
 
 @app.get("/documents/{doc_id}/pdf")

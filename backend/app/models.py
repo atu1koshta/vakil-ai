@@ -35,6 +35,8 @@ class ProcessResult(BaseModel):
     markdown: str
     chunks: list[Chunk]
     stats: ChunkStats
+    cached: bool = False          # served from registry, pipeline not re-run
+    pipeline_version: int = 0
 
 
 class DriveFile(BaseModel):
