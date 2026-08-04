@@ -8,9 +8,10 @@ backend/credentials/
 # Pipeline artifacts
 backend/output/
 
-# Eval artifacts — selection, eval_set, results stay in git; bulky sources don't
+# Eval artifacts — selection, eval_set, question_assignment, results stay in git; bulky sources & generated batches don't
 backend/evals/pdfs/
 backend/evals/text/
+backend/evals/questions/
 
 # Node
 frontend/node_modules/
