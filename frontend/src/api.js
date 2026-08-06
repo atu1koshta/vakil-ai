@@ -56,9 +56,14 @@ export async function listDocuments() {
   return handle(await fetch(`${BASE_URL}/documents`));
 }
 
-export async function searchChunks(q, k = 5) {
+export async function searchChunks(q, k = 5, profile = null) {
   const params = new URLSearchParams({ q, k: String(k) });
+  if (profile) params.set('profile', profile);
   return handle(await fetch(`${BASE_URL}/search?${params}`));
+}
+
+export async function listProfiles() {
+  return handle(await fetch(`${BASE_URL}/profiles`));
 }
 
 export async function indexStatus(docId) {

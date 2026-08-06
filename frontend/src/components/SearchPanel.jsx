@@ -15,27 +15,38 @@ const EXAMPLES = [
   'dissenting opinion on personal liberty',
 ];
 
-export default function SearchPanel() {
+export default function SearchPanel({ profileInfo }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openKey, setOpenKey] = useState(null);
+  // '' = backend's active profile; a name = search that profile's index.
+  const [profile, setProfile] = useState('');
 
-  async function run(q) {
+  const profileNames = profileInfo ? Object.keys(profileInfo.profiles) : [];
+
+  async function run(q, p) {
     const text = (q ?? query).trim();
     if (!text) return;
     setQuery(text);
     setLoading(true);
     setError(null);
     try {
-      setResults(await searchChunks(text, 8));
+      setResults(await searchChunks(text, 8, p ?? (profile || null)));
     } catch (e) {
       setError(e.message);
       setResults(null);
     } finally {
       setLoading(false);
     }
+  }
+
+  // Switching profile re-runs the current query against that profile's index,
+  // so side-by-side comparison is one dropdown click.
+  function onProfileChange(name) {
+    setProfile(name);
+    if (results !== null && query.trim()) run(query, name || null);
   }
 
   return (
@@ -53,6 +64,23 @@ export default function SearchPanel() {
           placeholder="Ask in plain language — search is by meaning, not keywords"
           className="min-w-0 flex-1 rounded border border-slate-300 px-3 py-1.5 text-sm"
         />
+        {profileNames.length > 1 && (
+          <select
+            value={profile}
+            onChange={(e) => onProfileChange(e.target.value)}
+            title="Which experiment profile's index to search"
+            className="rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700"
+          >
+            <option value="">{profileInfo.active} (active)</option>
+            {profileNames
+              .filter((name) => name !== profileInfo.active)
+              .map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+          </select>
+        )}
         <button
           type="submit"
           disabled={loading}
@@ -88,7 +116,16 @@ export default function SearchPanel() {
       {results !== null && (
         <ul className="flex-1 space-y-2 overflow-y-auto p-3">
           {results.length === 0 && (
-            <li className="text-sm text-slate-400">No results — is anything indexed yet?</li>
+            <li className="text-sm text-slate-400">
+              No results — is anything indexed yet?
+              {profile && (
+                <>
+                  {' '}
+                  Profile <span className="font-mono">{profile}</span> may need its index
+                  built: <span className="font-mono">python -m app.indexer --profile {profile}</span>
+                </>
+              )}
+            </li>
           )}
           {results.map((r) => {
             const key = `${r.doc_id}:${r.chunk_id}`;

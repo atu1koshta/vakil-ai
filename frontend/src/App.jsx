@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import UploadZone from './components/UploadZone.jsx';
 import DrivePanel from './components/DrivePanel.jsx';
 import PdfPanel from './components/PdfPanel.jsx';
@@ -8,7 +8,8 @@ import ChunkViewer from './components/ChunkViewer.jsx';
 import SearchPanel from './components/SearchPanel.jsx';
 import DashboardPanel from './components/DashboardPanel.jsx';
 import IndexStatusBadge from './components/IndexStatusBadge.jsx';
-import { documentPdfUrl } from './api.js';
+import ProfileBadge from './components/ProfileBadge.jsx';
+import { documentPdfUrl, listProfiles } from './api.js';
 
 const TABS = ['Dashboard', 'Search', 'Markdown', 'Metadata', 'Chunks'];
 
@@ -18,6 +19,13 @@ export default function App() {
   const [tab, setTab] = useState('Dashboard');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
+  // {active, profiles: {name: snapshot}} from /profiles; null until loaded,
+  // stays null if the backend is down — profile UI just doesn't render.
+  const [profileInfo, setProfileInfo] = useState(null);
+
+  useEffect(() => {
+    listProfiles().then(setProfileInfo).catch(() => setProfileInfo(null));
+  }, []);
 
   // Upload flow already has the file locally; Drive flow fetches it back
   // from the backend's persisted copy.
@@ -36,11 +44,14 @@ export default function App() {
   return (
     <div className="flex h-full flex-col bg-slate-100 text-slate-900">
       <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2">
-        <div>
-          <h1 className="text-lg font-semibold">Vakil AI — Document Processing Studio</h1>
-          <p className="text-xs text-slate-500">
-            parse → metadata → chunks → embeddings → semantic search
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-lg font-semibold">Vakil AI — Document Processing Studio</h1>
+            <p className="text-xs text-slate-500">
+              parse → metadata → chunks → embeddings → semantic search
+            </p>
+          </div>
+          <ProfileBadge profileInfo={profileInfo} />
         </div>
         {result && (
           <div className="text-right text-xs text-slate-500">
@@ -102,7 +113,7 @@ export default function App() {
                 // corpus-wide — works without a loaded document
                 <DashboardPanel />
               ) : tab === 'Search' ? (
-                <SearchPanel />
+                <SearchPanel profileInfo={profileInfo} />
               ) : !result ? (
                 <div className="flex h-full items-center justify-center text-sm text-slate-400">
                   Upload a judgment PDF or pick one from Drive.
