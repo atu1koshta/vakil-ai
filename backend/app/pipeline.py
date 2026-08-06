@@ -21,10 +21,11 @@ import shutil
 from pathlib import Path
 
 from . import registry
-from .chunker import chunk_markdown, extract_tables
-from .metadata import extract_metadata
+from .chunker import get_chunker
+from .config import get_profile
+from .metadata import get_metadata_extractor
 from .models import ChunkStats, DocumentMetadata, ProcessResult
-from .parser import parse_pdf
+from .parser import get_parser
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
 
@@ -91,11 +92,13 @@ def process_pdf(pdf_path: Path, original_name: str, *, force: bool = False) -> P
 
 
 def _run_pipeline(pdf_path: Path, original_name: str) -> ProcessResult:
-    markdown = parse_pdf(pdf_path)
+    markdown = get_parser().parse(pdf_path)
     # Metadata sees the original text (citation tables help it); chunks don't.
-    metadata = extract_metadata(markdown, original_name)
-    chunkable_md, tables = extract_tables(markdown)
-    chunks = chunk_markdown(chunkable_md)
+    metadata = get_metadata_extractor().extract(markdown, original_name)
+    # chunks.json is a studio inspection artifact of the ACTIVE profile's
+    # chunking; the indexer re-chunks from markdown.md per profile.
+    chunk_result = get_chunker(get_profile().chunking).chunk_document(markdown)
+    chunks, tables = chunk_result.chunks, chunk_result.tables
 
     token_counts = [c.token_count for c in chunks] or [0]
     stats = ChunkStats(

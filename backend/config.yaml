@@ -1,0 +1,80 @@
+# Vakil AI — experiment profiles.
+#
+# A profile = embedding model + chunking knobs + index enrichment. Each profile
+# indexes into its OWN vector DB (db_path, default vectors-<profile>.db), so
+# several model/chunking combinations can coexist and be compared:
+#
+#   python -m app.indexer --profile <name>          # build that profile's index
+#   python -m app.evals.run_eval --profile <name>   # score it
+#   python -m app.evals.compare                     # side-by-side metrics table
+#
+# The API server and the processing pipeline use active_profile (override per
+# shell with VAKIL_PROFILE=<name>, config path with VAKIL_CONFIG=<path>).
+# Docling parsing happens once per document regardless of profile — the indexer
+# re-chunks from output/<doc>/markdown.md with the profile's chunking config.
+#
+# Prefix note: nomic-embed-text and mxbai-embed-large are prefix-trained for
+# asymmetric retrieval; dropping their prefixes silently degrades quality.
+# Symmetric models (all-minilm) take empty prefixes.
+
+active_profile: nomic-default
+
+# Pipeline-level components (shared by all profiles; registry names in
+# parser.py / metadata.py). A parser change must bump PIPELINE_VERSION.
+components:
+  parser: docling
+  metadata_extractor: regex
+
+profiles:
+  nomic-default:
+    store: sqlite        # VectorIndex implementation (vector_store.py)
+    db_path: vectors.db  # pre-existing index from before profiles existed
+    embedding:
+      provider: ollama
+      base_url: http://localhost:11434
+      model: nomic-embed-text
+      dim: 768
+      batch_size: 64
+      timeout_s: 120
+      document_prefix: "search_document: "
+      query_prefix: "search_query: "
+    chunking:
+      strategy: section-aware  # Chunker implementation (chunker.py)
+      target_tokens: 700
+      max_tokens: 900
+      min_tokens: 120
+      overlap_tokens: 80
+      encoding: cl100k_base
+    indexing:
+      enrich: true
+
+  # Same model, smaller chunks — isolates the chunking variable.
+  nomic-small-chunks:
+    embedding:
+      model: nomic-embed-text
+      dim: 768
+      document_prefix: "search_document: "
+      query_prefix: "search_query: "
+    chunking:
+      target_tokens: 350
+      max_tokens: 450
+      min_tokens: 60
+      overlap_tokens: 40
+
+  # Different model — `ollama pull mxbai-embed-large` first.
+  # mxbai-large:
+  #   embedding:
+  #     model: mxbai-embed-large
+  #     dim: 1024
+  #     query_prefix: "Represent this sentence for searching relevant passages: "
+  #   chunking:
+  #     target_tokens: 700
+  #     max_tokens: 900
+  #     min_tokens: 120
+  #     overlap_tokens: 80
+
+  # Small symmetric model, no prefixes — `ollama pull all-minilm` first.
+  # minilm:
+  #   embedding:
+  #     model: all-minilm
+  #     dim: 384

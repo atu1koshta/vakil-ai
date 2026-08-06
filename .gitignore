@@ -23,4 +23,5 @@ data/
 .DS_Store
 credentials/*
 backend/vectors.db
+backend/vectors-*.db
 backend/vakil.db

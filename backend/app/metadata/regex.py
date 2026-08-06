@@ -1,4 +1,4 @@
-"""Heuristic metadata extraction from parsed judgment Markdown.
+"""Regex/heuristic MetadataExtractor.
 
 Works on the first portion of the document where Indian judgments carry
 their header block: court name, case title (X vs Y), date, coram/judges,
@@ -7,7 +7,8 @@ and neutral/reporter citations.
 
 import re
 
-from .models import DocumentMetadata
+from ..models import DocumentMetadata
+from .base import MetadataExtractor
 
 # How much of the document head to scan for header fields.
 HEAD_CHARS = 6000
@@ -94,35 +95,36 @@ def _extract_judges(head: str) -> list[str]:
     return judges[:10]
 
 
-def extract_metadata(markdown: str, source_file: str) -> DocumentMetadata:
-    head = markdown[:HEAD_CHARS]
+class RegexMetadataExtractor(MetadataExtractor):
+    def extract(self, markdown: str, source_file: str) -> DocumentMetadata:
+        head = markdown[:HEAD_CHARS]
 
-    court = None
-    for pattern in COURT_PATTERNS:
-        match = re.search(pattern, head, re.IGNORECASE)
-        if match:
-            court = _clean(match.group(0)).title()
-            break
+        court = None
+        for pattern in COURT_PATTERNS:
+            match = re.search(pattern, head, re.IGNORECASE)
+            if match:
+                court = _clean(match.group(0)).title()
+                break
 
-    date = None
-    for pattern in DATE_PATTERNS:
-        match = re.search(pattern, head, re.IGNORECASE)
-        if match:
-            date = _clean(match.group(0))
-            break
+        date = None
+        for pattern in DATE_PATTERNS:
+            match = re.search(pattern, head, re.IGNORECASE)
+            if match:
+                date = _clean(match.group(0))
+                break
 
-    citations: list[str] = []
-    for pattern in CITATION_PATTERNS:
-        for match in re.finditer(pattern, markdown):
-            value = _clean(match.group(0))
-            if value not in citations:
-                citations.append(value)
+        citations: list[str] = []
+        for pattern in CITATION_PATTERNS:
+            for match in re.finditer(pattern, markdown):
+                value = _clean(match.group(0))
+                if value not in citations:
+                    citations.append(value)
 
-    return DocumentMetadata(
-        case_title=_extract_case_title(head),
-        court=court,
-        date=date,
-        judges=_extract_judges(head),
-        citations=citations[:20],
-        source_file=source_file,
-    )
+        return DocumentMetadata(
+            case_title=_extract_case_title(head),
+            court=court,
+            date=date,
+            judges=_extract_judges(head),
+            citations=citations[:20],
+            source_file=source_file,
+        )

@@ -1,26 +1,24 @@
-"""Semantic chunker for Indian court judgments.
+"""Section-aware Chunker for Indian court judgments (see PLAN.md):
 
-Strategy (see PLAN.md):
 1. Split Markdown into sections by headings; classify against canonical
    judgment sections (Facts / Issues / Arguments / Analysis / Judgment).
-2. Sections over MAX_TOKENS are sub-split at paragraph boundaries,
-   targeting TARGET_TOKENS per chunk with ~OVERLAP_TOKENS of overlap.
+2. Sections over max_tokens are sub-split at paragraph boundaries,
+   targeting target_tokens per chunk with ~overlap_tokens of overlap.
 3. Every chunk is prefixed with its section title so it stays
    self-describing after retrieval.
+
+Pipe-tables are pulled out first (chunk_document returns them separately):
+they have no retrieval value as prose and break size-splitting.
 """
 
 import re
+from functools import lru_cache
 
 import tiktoken
 
-from .models import Chunk
-
-TARGET_TOKENS = 700
-MAX_TOKENS = 900
-MIN_TOKENS = 120  # merge tail chunks smaller than this into the previous chunk
-OVERLAP_TOKENS = 80
-
-_enc = tiktoken.get_encoding("cl100k_base")
+from ..config import ChunkingConfig
+from ..models import Chunk, ChunkResult
+from .base import Chunker
 
 # Canonical judgment sections; matched against heading text.
 SECTION_KEYWORDS = {
@@ -39,8 +37,13 @@ CAPS_HEADING_RE = re.compile(r"^([A-Z][A-Z\s&/,'-]{3,60})$", re.MULTILINE)
 NUMBERED_PARA_RE = re.compile(r"(?m)^(?=\d{1,3}\.\s)")
 
 
-def count_tokens(text: str) -> int:
-    return len(_enc.encode(text))
+@lru_cache(maxsize=4)
+def _encoding(name: str) -> tiktoken.Encoding:
+    return tiktoken.get_encoding(name)
+
+
+def count_tokens(text: str, encoding: str = "cl100k_base") -> int:
+    return len(_encoding(encoding).encode(text))
 
 
 def is_valid_heading(title: str) -> bool:
@@ -142,23 +145,25 @@ def _split_units(text: str) -> list[str]:
     return _split_paragraphs(text)
 
 
-def _hard_token_split(text: str, limit: int) -> list[str]:
-    """Last resort: split on raw token windows so MAX_TOKENS is a guarantee
+def _hard_token_split(text: str, limit: int, enc: tiktoken.Encoding) -> list[str]:
+    """Last resort: split on raw token windows so max_tokens is a guarantee
     (tables/lists without sentence punctuation defeat the sentence splitter)."""
-    tokens = _enc.encode(text)
+    tokens = enc.encode(text)
     return [
-        _enc.decode(tokens[i : i + limit]).strip()
+        enc.decode(tokens[i : i + limit]).strip()
         for i in range(0, len(tokens), limit)
     ]
 
 
-def _split_oversized_paragraph(paragraph: str, limit: int) -> list[str]:
-    """Sentence-level split for a single paragraph that alone exceeds limit."""
+def _split_oversized_paragraph(
+    paragraph: str, cfg: ChunkingConfig, enc: tiktoken.Encoding
+) -> list[str]:
+    """Sentence-level split for a single paragraph that alone exceeds target."""
     sentences = re.split(r"(?<=[.!?])\s+", paragraph)
     parts, current, current_tokens = [], [], 0
     for sentence in sentences:
-        tokens = count_tokens(sentence)
-        if current and current_tokens + tokens > limit:
+        tokens = len(enc.encode(sentence))
+        if current and current_tokens + tokens > cfg.target_tokens:
             parts.append(" ".join(current))
             current, current_tokens = [], 0
         current.append(sentence)
@@ -169,24 +174,26 @@ def _split_oversized_paragraph(paragraph: str, limit: int) -> list[str]:
         piece
         for part in parts
         for piece in (
-            _hard_token_split(part, limit) if count_tokens(part) > MAX_TOKENS else [part]
+            _hard_token_split(part, cfg.target_tokens, enc)
+            if len(enc.encode(part)) > cfg.max_tokens
+            else [part]
         )
     ]
 
 
-def _sub_split(section_text: str) -> list[str]:
-    """Greedy unit packing to TARGET_TOKENS with unit-level overlap. Units are
+def _sub_split(section_text: str, cfg: ChunkingConfig, enc: tiktoken.Encoding) -> list[str]:
+    """Greedy unit packing to target_tokens with unit-level overlap. Units are
     numbered legal paragraphs where the document has them, else paragraphs;
     oversized units degrade to sub-paragraphs, sentences, then raw tokens."""
     paragraphs: list[str] = []
     for unit in _split_units(section_text):
-        if count_tokens(unit) <= MAX_TOKENS:
+        if len(enc.encode(unit)) <= cfg.max_tokens:
             paragraphs.append(unit)
             continue
         # Numbered unit can span several text paragraphs — try those first.
         for paragraph in _split_paragraphs(unit):
-            if count_tokens(paragraph) > MAX_TOKENS:
-                paragraphs.extend(_split_oversized_paragraph(paragraph, TARGET_TOKENS))
+            if len(enc.encode(paragraph)) > cfg.max_tokens:
+                paragraphs.extend(_split_oversized_paragraph(paragraph, cfg, enc))
             else:
                 paragraphs.append(paragraph)
 
@@ -195,15 +202,15 @@ def _sub_split(section_text: str) -> list[str]:
     current_tokens = 0
 
     for paragraph in paragraphs:
-        tokens = count_tokens(paragraph)
-        if current and current_tokens + tokens > TARGET_TOKENS:
+        tokens = len(enc.encode(paragraph))
+        if current and current_tokens + tokens > cfg.target_tokens:
             pieces.append("\n\n".join(current))
-            # Overlap: carry trailing paragraphs up to OVERLAP_TOKENS forward.
+            # Overlap: carry trailing paragraphs up to overlap_tokens forward.
             overlap: list[str] = []
             overlap_tokens = 0
             for prev in reversed(current):
-                prev_tokens = count_tokens(prev)
-                if overlap_tokens + prev_tokens > OVERLAP_TOKENS:
+                prev_tokens = len(enc.encode(prev))
+                if overlap_tokens + prev_tokens > cfg.overlap_tokens:
                     break
                 overlap.insert(0, prev)
                 overlap_tokens += prev_tokens
@@ -215,41 +222,48 @@ def _sub_split(section_text: str) -> list[str]:
     if current:
         piece = "\n\n".join(current)
         # Avoid a tiny tail chunk that is mostly overlap of the previous one.
-        if pieces and count_tokens(piece) < MIN_TOKENS:
+        if pieces and len(enc.encode(piece)) < cfg.min_tokens:
             pieces[-1] = pieces[-1] + "\n\n" + current[-1]
         else:
             pieces.append(piece)
     # Joins ("\n\n") add tokens beyond the per-unit sums the packer tracked;
-    # re-measure so MAX_TOKENS is a hard guarantee on the final text.
+    # re-measure so max_tokens is a hard guarantee on the final text.
     return [
         part
         for piece in pieces
         for part in (
-            _hard_token_split(piece, TARGET_TOKENS)
-            if count_tokens(piece) > MAX_TOKENS
+            _hard_token_split(piece, cfg.target_tokens, enc)
+            if len(enc.encode(piece)) > cfg.max_tokens
             else [piece]
         )
     ]
 
 
-def chunk_markdown(markdown: str) -> list[Chunk]:
-    chunks: list[Chunk] = []
-    for section_title, section_text in split_sections(markdown):
-        if count_tokens(section_text) <= MAX_TOKENS:
-            pieces = [section_text]
-        else:
-            pieces = _sub_split(section_text)
-        for piece in pieces:
-            text = f"## {section_title}\n\n{piece}"
-            index = len(chunks)
-            chunks.append(
-                Chunk(
-                    id=f"chunk_{index:03d}",
-                    index=index,
-                    section=section_title,
-                    text=text,
-                    token_count=count_tokens(text),
-                    char_count=len(text),
+class SectionAwareChunker(Chunker):
+    def __init__(self, cfg: ChunkingConfig) -> None:
+        self.cfg = cfg
+
+    def chunk_document(self, markdown: str) -> ChunkResult:
+        chunkable_md, tables = extract_tables(markdown)
+        cfg = self.cfg
+        enc = _encoding(cfg.encoding)
+        chunks: list[Chunk] = []
+        for section_title, section_text in split_sections(chunkable_md):
+            if len(enc.encode(section_text)) <= cfg.max_tokens:
+                pieces = [section_text]
+            else:
+                pieces = _sub_split(section_text, cfg, enc)
+            for piece in pieces:
+                text = f"## {section_title}\n\n{piece}"
+                index = len(chunks)
+                chunks.append(
+                    Chunk(
+                        id=f"chunk_{index:03d}",
+                        index=index,
+                        section=section_title,
+                        text=text,
+                        token_count=len(enc.encode(text)),
+                        char_count=len(text),
+                    )
                 )
-            )
-    return chunks
+        return ChunkResult(chunks=chunks, tables=tables)

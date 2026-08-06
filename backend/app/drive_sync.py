@@ -23,7 +23,7 @@ from . import registry
 from .connectors import drive
 from .indexer import index_document
 from .pipeline import OUTPUT_DIR, process_pdf
-from .vector_store import connect as vec_connect
+from .vector_store import open_store
 
 DOWNLOAD_ATTEMPTS = 3
 BACKOFF_BASE_SECONDS = 2
@@ -83,7 +83,8 @@ def _process_one(conn, row) -> None:
         tmp_path, original_name = _download_with_retry(file_id)
         result = process_pdf(tmp_path, original_name)  # registry sha dedup inside
         if not result.cached:
-            index_document(vec_connect(), OUTPUT_DIR / result.doc_id)
+            with open_store() as store:
+                index_document(store, OUTPUT_DIR / result.doc_id)
         conn.execute(
             "UPDATE drive_sync SET status='done', doc_id=?, error=NULL, updated_at=? "
             "WHERE file_id=?",

@@ -15,7 +15,7 @@ import time
 from . import registry
 from .indexer import index_document
 from .pipeline import OUTPUT_DIR, PIPELINE_VERSION, process_pdf
-from .vector_store import connect as vec_connect
+from .vector_store import open_store
 
 
 def reprocess_one(doc_row) -> str:
@@ -25,7 +25,8 @@ def reprocess_one(doc_row) -> str:
         return f"SKIP {doc_id}: source.pdf missing"
     start = time.perf_counter()
     result = process_pdf(pdf, doc_row["source_name"], force=True)
-    embedded, skipped = index_document(vec_connect(), OUTPUT_DIR / result.doc_id)
+    with open_store() as store:
+        embedded, skipped = index_document(store, OUTPUT_DIR / result.doc_id)
     return (
         f"OK {doc_id}: v{PIPELINE_VERSION}, {result.stats.total_chunks} chunks, "
         f"{embedded} re-embedded ({time.perf_counter() - start:.0f}s)"

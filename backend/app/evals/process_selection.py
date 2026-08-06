@@ -15,14 +15,14 @@ from pathlib import Path
 from ..connectors import drive
 from ..indexer import index_document
 from ..pipeline import OUTPUT_DIR, process_pdf
-from ..vector_store import connect as vec_connect
+from ..vector_store import open_store
 
 EVALS_DIR = Path(__file__).resolve().parent.parent.parent / "evals"
 
 
 def main() -> None:
     selection = json.loads((EVALS_DIR / "selection.json").read_text())
-    vec = vec_connect()
+    vec = open_store()
     done, failed = 0, []
     started = time.time()
 

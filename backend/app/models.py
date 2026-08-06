@@ -10,6 +10,14 @@ class Chunk(BaseModel):
     char_count: int
 
 
+class ChunkResult(BaseModel):
+    """Output of a Chunker: retrieval chunks plus tables it pulled out of the
+    prose (tables have no retrieval value but are persisted for inspection)."""
+
+    chunks: list[Chunk]
+    tables: list[str] = Field(default_factory=list)
+
+
 class DocumentMetadata(BaseModel):
     case_title: str | None = None
     court: str | None = None

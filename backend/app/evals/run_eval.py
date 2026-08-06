@@ -9,22 +9,25 @@ Metrics (k = 1, 3, 5, 10):
 - mrr — mean reciprocal rank of the gold doc over top-MAX_K.
 
 Prints a summary table and writes evals/results/<tag>.json with per-question
-detail for miss analysis.
+detail for miss analysis. The result embeds the full profile config snapshot,
+so every saved run is reproducible and comparable (see compare.py).
 
 Usage:
-    python -m app.evals.run_eval [tag]
+    python -m app.evals.run_eval [tag] [--profile <name>]
 
-Tag names the run (e.g. "baseline-700-80"); defaults to "run".
+Tag names the run (e.g. "baseline-700-80"); defaults to the profile name.
+--profile scores that profile's index (build it first with
+`python -m app.indexer --profile <name>`); default = active profile.
 """
 
+import argparse
 import json
 import re
-import sys
 from pathlib import Path
 
-from ..embeddings import embed_query
-from ..vector_store import connect as vec_connect
-from ..vector_store import count_chunks, search
+from ..config import get_profile
+from ..embeddings import get_embedder
+from ..vector_store import open_store
 
 EVALS_DIR = Path(__file__).resolve().parent.parent.parent / "evals"
 RESULTS_DIR = EVALS_DIR / "results"
@@ -53,19 +56,29 @@ def coverage(gold: set[tuple[str, ...]], chunk_text: str) -> float:
 
 
 def main() -> None:
-    tag = sys.argv[1] if len(sys.argv) > 1 else "run"
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("tag", nargs="?", help="run name (default: profile name)")
+    ap.add_argument("--profile", help="profile to score (default: active)")
+    args = ap.parse_args()
+
+    profile = get_profile(args.profile)
+    tag = args.tag or profile.name
+    embedder = get_embedder(profile)
     questions = [
         json.loads(line)
         for line in (EVALS_DIR / "eval_set.jsonl").read_text().splitlines()
         if line.strip()
     ]
-    conn = vec_connect()
-    total_chunks = count_chunks(conn)
-    print(f"Eval: {len(questions)} questions against {total_chunks} chunks\n")
+    store = open_store(profile)
+    total_chunks = store.count_chunks()
+    print(
+        f"Eval: {len(questions)} questions against {total_chunks} chunks "
+        f"(profile {profile.name}, model {profile.embedding.model})\n"
+    )
 
     details = []
     for q in questions:
-        hits = search(conn, embed_query(q["question"]), k=MAX_K)
+        hits = store.search(embedder.embed_query(q["question"]), k=MAX_K)
         gold = shingles(normalize_words(q["gold_passage"]))
 
         doc_rank = next(
@@ -89,7 +102,12 @@ def main() -> None:
         )
 
     n = len(details)
-    summary: dict = {"tag": tag, "questions": n, "chunks": total_chunks}
+    summary: dict = {
+        "tag": tag,
+        "profile": profile.snapshot(),
+        "questions": n,
+        "chunks": total_chunks,
+    }
     for k in KS:
         summary[f"doc_recall@{k}"] = round(
             sum(1 for d in details if d["doc_rank"] and d["doc_rank"] <= k) / n, 3

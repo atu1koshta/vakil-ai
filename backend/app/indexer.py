@@ -1,26 +1,32 @@
-"""Index chunked documents into the vector store.
+"""Index processed documents into a profile's vector store.
 
-    python -m app.indexer            # index everything under output/
-    python -m app.indexer <doc-slug> # index one document
+    python -m app.indexer                          # all docs, active profile
+    python -m app.indexer <doc-slug>               # one document
+    python -m app.indexer --profile <name>         # all docs, named profile
 
 Learning notes:
+- Chunking happens HERE, from output/<doc>/markdown.md, with the profile's
+  chunking config — not from chunks.json. Docling parsing (the expensive step)
+  runs once per document; every profile re-derives its own chunks in memory
+  (milliseconds), so chunking variants need no reprocessing. chunks.json
+  remains the studio inspection artifact for the active profile.
 - Embeds ENRICHED text (case title + section + chunk) so every chunk is
   findable by case name even when the chunk never mentions it; the payload
-  stores the RAW text for display. Enrichment costs nothing at index time and
-  lifts retrieval quality more than most model choices.
+  stores the RAW text for display. Toggle via `indexing.enrich` per profile.
 - content_hash makes re-runs free: unchanged chunks are skipped before any
-  embedding call happens. Delete vectors.db to force a full rebuild.
+  embedding call. Delete the profile's db file to force a full rebuild.
 - Failure isolation is per document: one bad doc is reported and skipped, the
   rest of the corpus still indexes.
 """
+import argparse
 import hashlib
 import json
-import sys
 import time
 from pathlib import Path
 
-from .embeddings import embed_documents
-from .vector_store import connect, count_chunks, existing_hashes, upsert_chunk
+from .chunker import get_chunker
+from .embeddings import get_embedder
+from .vector_store import VectorIndex, open_store
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
 
@@ -30,100 +36,112 @@ def enrich(case_title: str, section: str, text: str) -> str:
     return f"{header}\n{text}" if header else text
 
 
-def index_document(conn, doc_dir: Path) -> tuple[int, int]:
+def index_document(store: VectorIndex, doc_dir: Path) -> tuple[int, int]:
     """Returns (embedded, skipped)."""
-    data = json.loads((doc_dir / "chunks.json").read_text())
+    profile = store.profile
+    markdown = (doc_dir / "markdown.md").read_text()
     meta = json.loads((doc_dir / "metadata.json").read_text())
-    doc_id = data["doc_id"]
+    doc_id = doc_dir.name
     case_title = meta.get("case_title") or doc_id
 
-    known = existing_hashes(conn, doc_id)
+    chunks = get_chunker(profile.chunking).chunk_document(markdown).chunks
+
+    known = store.existing_hashes(doc_id)
     pending = []
-    for c in data["chunks"]:
-        embedded_text = enrich(case_title, c["section"], c["text"])
+    for c in chunks:
+        embedded_text = (
+            enrich(case_title, c.section, c.text) if profile.indexing.enrich else c.text
+        )
         content_hash = hashlib.sha256(embedded_text.encode()).hexdigest()
-        key = f"{doc_id}:{c['id']}"
+        key = f"{doc_id}:{c.id}"
         if known.get(key) == content_hash:
             continue  # unchanged — free re-run
         pending.append((key, c, embedded_text, content_hash))
 
     if pending:
-        vectors = embed_documents([p[2] for p in pending])
+        vectors = get_embedder(profile).embed_documents([p[2] for p in pending])
         for (key, c, _text, content_hash), vector in zip(pending, vectors):
-            upsert_chunk(
-                conn,
+            store.upsert_chunk(
                 key=key,
                 doc_id=doc_id,
-                chunk_id=c["id"],
-                section=c["section"],
+                chunk_id=c.id,
+                section=c.section,
                 case_title=case_title,
-                text=c["text"],
+                text=c.text,
                 content_hash=content_hash,
                 vector=vector,
             )
-        conn.commit()
-    return len(pending), len(data["chunks"]) - len(pending)
+        store.commit()
+    return len(pending), len(chunks) - len(pending)
 
 
-def index_doc_by_id(doc_id: str) -> None:
+def index_doc_by_id(doc_id: str, profile_name: str | None = None) -> None:
     """Background-task entrypoint: index one processed document by slug.
     Failures are logged, never raised — a background task has no requester
     to bubble up to; /documents/{doc_id}/index-status exposes the outcome."""
     import logging
 
-    doc_dir = OUTPUT_DIR / doc_id
-    conn = connect()
+    from .config import get_profile
+
     try:
-        embedded, skipped = index_document(conn, doc_dir)
+        with open_store(get_profile(profile_name)) as store:
+            embedded, skipped = index_document(store, OUTPUT_DIR / doc_id)
         logging.getLogger("vakil").info(
             "indexed %s: %d embedded, %d skipped", doc_id, embedded, skipped
         )
     except Exception:
         logging.getLogger("vakil").exception("indexing failed for %s", doc_id)
-    finally:
-        conn.close()
 
 
-def index_status(doc_id: str) -> dict:
-    """Compare chunks on disk vs vectors in store for one document."""
+def index_status(doc_id: str, profile_name: str | None = None) -> dict:
+    """Compare chunks on disk vs vectors in the profile's store for one doc.
+    total_chunks comes from chunks.json — the active-profile artifact — so it
+    is exact for the active profile and an estimate for chunking variants."""
+    from .config import get_profile
+
     doc_dir = OUTPUT_DIR / doc_id
     total = 0
     if (doc_dir / "chunks.json").exists():
         total = len(json.loads((doc_dir / "chunks.json").read_text())["chunks"])
-    conn = connect()
-    try:
-        indexed = conn.execute(
-            "SELECT COUNT(*) FROM chunk_vectors WHERE doc_id = ?", (doc_id,)
-        ).fetchone()[0]
-    finally:
-        conn.close()
+    with open_store(get_profile(profile_name)) as store:
+        indexed = store.count_for_doc(doc_id)
     return {"doc_id": doc_id, "total_chunks": total, "indexed_chunks": indexed,
             "complete": total > 0 and indexed >= total}
 
 
 def main() -> None:
-    only = sys.argv[1] if len(sys.argv) > 1 else None
+    from .config import get_profile
+
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("doc_slug", nargs="?", help="index only this document")
+    ap.add_argument("--profile", help="profile name (default: active profile)")
+    args = ap.parse_args()
+
+    profile = get_profile(args.profile)
     doc_dirs = [
         d for d in sorted(OUTPUT_DIR.iterdir())
-        if d.is_dir() and (d / "chunks.json").exists() and (only in (None, d.name))
+        if d.is_dir() and (d / "markdown.md").exists()
+        and (args.doc_slug in (None, d.name))
     ]
     if not doc_dirs:
         print(f"nothing to index under {OUTPUT_DIR}")
         return
 
-    conn = connect()
-    for doc_dir in doc_dirs:
-        start = time.perf_counter()
-        try:
-            embedded, skipped = index_document(conn, doc_dir)
-        except Exception as e:  # per-document isolation
-            print(f"FAILED {doc_dir.name}: {e}")
-            continue
-        print(
-            f"{doc_dir.name}: {embedded} embedded, {skipped} skipped "
-            f"({time.perf_counter() - start:.1f}s)"
-        )
-    print(f"store total: {count_chunks(conn)} chunks")
+    print(f"profile: {profile.name} (model={profile.embedding.model}, "
+          f"db={profile.resolve_db_path().name})")
+    with open_store(profile) as store:
+        for doc_dir in doc_dirs:
+            start = time.perf_counter()
+            try:
+                embedded, skipped = index_document(store, doc_dir)
+            except Exception as e:  # per-document isolation
+                print(f"FAILED {doc_dir.name}: {e}")
+                continue
+            print(
+                f"{doc_dir.name}: {embedded} embedded, {skipped} skipped "
+                f"({time.perf_counter() - start:.1f}s)"
+            )
+        print(f"store total: {store.count_chunks()} chunks")
 
 
 if __name__ == "__main__":

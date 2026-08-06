@@ -29,18 +29,36 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/profiles")
+def list_profiles() -> dict:
+    """Configured experiment profiles (config.yaml) and which one is active."""
+    from .config import get_config, get_profile
+
+    cfg = get_config()
+    return {
+        "active": get_profile().name,
+        "profiles": {name: p.snapshot() for name, p in cfg.profiles.items()},
+    }
+
+
 @app.get("/search")
-def search(q: str, k: int = 5) -> list[dict]:
-    """Semantic search over indexed chunks (run `python -m app.indexer` first)."""
-    from .embeddings import EmbeddingError, embed_query
-    from .vector_store import connect as vec_connect
-    from .vector_store import search as vec_search
+def search(q: str, k: int = 5, profile: str | None = None) -> list[dict]:
+    """Semantic search over indexed chunks (run `python -m app.indexer` first).
+    `profile` targets a specific experiment profile; default = active profile."""
+    from .config import ConfigError, get_profile
+    from .embeddings import EmbeddingError, get_embedder
+    from .vector_store import IndexConfigMismatch, open_store
 
     try:
-        vector = embed_query(q)
-    except EmbeddingError as exc:
+        prof = get_profile(profile)
+    except ConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    try:
+        vector = get_embedder(prof).embed_query(q)
+        with open_store(prof) as store:
+            rows = store.search(vector, k=k)
+    except (EmbeddingError, IndexConfigMismatch) as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    rows = vec_search(vec_connect(), vector, k=k)
     for r in rows:
         r["score"] = round(r["score"], 4)  # cosine similarity, higher = closer
     return rows
