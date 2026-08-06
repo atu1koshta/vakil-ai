@@ -7,6 +7,7 @@ import MetadataCard from './components/MetadataCard.jsx';
 import ChunkViewer from './components/ChunkViewer.jsx';
 import SearchPanel from './components/SearchPanel.jsx';
 import DashboardPanel from './components/DashboardPanel.jsx';
+import ProgressPage from './components/ProgressPage.jsx';
 import IndexStatusBadge from './components/IndexStatusBadge.jsx';
 import ProfileBadge from './components/ProfileBadge.jsx';
 import { documentPdfUrl, listProfiles } from './api.js';
@@ -14,6 +15,14 @@ import { documentPdfUrl, listProfiles } from './api.js';
 const TABS = ['Dashboard', 'Search', 'Markdown', 'Metadata', 'Chunks'];
 
 export default function App() {
+  // Poor-man's routing: /progress renders the learning journal, everything
+  // else the studio. A real router earns its dependency at the third page.
+  if (window.location.pathname === '/progress') return <ProgressPage />;
+
+  return <Studio />;
+}
+
+function Studio() {
   const [result, setResult] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [tab, setTab] = useState('Dashboard');
@@ -52,6 +61,12 @@ export default function App() {
             </p>
           </div>
           <ProfileBadge profileInfo={profileInfo} />
+          <a
+            href="/progress"
+            className="rounded border border-slate-200 px-2 py-1 text-xs font-medium text-slate-500 hover:border-sky-300 hover:text-sky-700"
+          >
+            Progress
+          </a>
         </div>
         {result && (
           <div className="text-right text-xs text-slate-500">
