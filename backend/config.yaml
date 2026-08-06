@@ -19,6 +19,42 @@
 
 active_profile: nomic-default
 
+# Generation (chat) models — top-level, NOT a profile knob: they only read
+# retrieved text, so switching never invalidates any vector index.
+# Switch: flip `active`, or per shell VAKIL_CHAT_MODEL=<name>.
+generation:
+  active: deepseek
+  models:
+    llama:
+      provider: ollama # ChatModel implementation (llm/)
+      base_url: http://localhost:11434
+      model: llama3.1
+      num_ctx: 8192 # RAG prompts are big; Ollama silently truncates on overflow
+      temperature: 0.0 # grounded QA wants determinism, not variety
+      timeout_s: 300
+
+    # Reasoning model — emits <think>...</think> before answering (stripped
+    # by OllamaChat). Slower per answer; compare against llama via evals.
+    deepseek:
+      provider: ollama
+      base_url: http://localhost:11434
+      model: deepseek-r1:8b
+      num_ctx: 8192
+      temperature: 0.0
+      timeout_s: 600 # thinking tokens take time
+
+    # DeepSeek's HOSTED API (no local weights) — OpenAI-compatible wire
+    # format. `export DEEPSEEK_API_KEY=sk-...` then flip active (or
+    # VAKIL_CHAT_MODEL=deepseek-api). model: deepseek-chat = V3 (fast),
+    # deepseek-reasoner = R1 (thinking). num_ctx ignored (server-side).
+    deepseek-api:
+      provider: openai-compatible
+      base_url: https://api.deepseek.com
+      model: deepseek-chat
+      api_key_env: DEEPSEEK_API_KEY
+      temperature: 0.0
+      timeout_s: 120
+
 # Pipeline-level components (shared by all profiles; registry names in
 # parser.py / metadata.py). A parser change must bump PIPELINE_VERSION.
 components:
@@ -27,8 +63,8 @@ components:
 
 profiles:
   nomic-default:
-    store: sqlite        # VectorIndex implementation (vector_store.py)
-    db_path: vectors.db  # pre-existing index from before profiles existed
+    store: sqlite # VectorIndex implementation (vector_store.py)
+    db_path: vectors.db # pre-existing index from before profiles existed
     embedding:
       provider: ollama
       base_url: http://localhost:11434
@@ -39,7 +75,7 @@ profiles:
       document_prefix: "search_document: "
       query_prefix: "search_query: "
     chunking:
-      strategy: section-aware  # Chunker implementation (chunker.py)
+      strategy: section-aware # Chunker implementation (chunker.py)
       target_tokens: 700
       max_tokens: 900
       min_tokens: 120

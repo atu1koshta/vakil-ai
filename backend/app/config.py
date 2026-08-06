@@ -34,6 +34,24 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG_PATH = BACKEND_DIR / "config.yaml"
 
 
+def _load_dotenv(path: Path = BACKEND_DIR / ".env") -> None:
+    """Load backend/.env into os.environ at import, so CLIs (`python -m
+    app.llm`, indexer, evals) see the same vars as `make backend` (whose
+    shell sources the file). setdefault = real environment always wins —
+    `VAKIL_CHAT_MODEL=x python -m ...` still overrides the file."""
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+
+
+_load_dotenv()
+
+
 class ConfigError(RuntimeError):
     pass
 
@@ -119,6 +137,49 @@ class Profile(BaseModel):
         return self.model_dump() | {"fingerprint": self.fingerprint()}
 
 
+class GenerationConfig(BaseModel):
+    """One named chat model. Generation is TOP-LEVEL, not per-profile: the
+    chat model reads retrieved text, it never produces vectors, so swapping
+    it can't invalidate an index and it stays out of profile fingerprints."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = ""  # filled from the generation.models map key
+    # Registry name of a ChatModel implementation (llm._CHAT_MODELS).
+    provider: str = "ollama"
+    base_url: str = "http://localhost:11434"
+    model: str = "llama3.1"
+    # Sized for RAG prompts: system + k chunks + question + answer headroom.
+    # Ollama TRUNCATES the prompt front silently on overflow — keep generous.
+    num_ctx: int = Field(8192, ge=1024)
+    temperature: float = Field(0.0, ge=0.0, le=2.0)
+    timeout_s: float = Field(300.0, gt=0)
+    # For API providers (openai-compatible): NAME of the env var holding the
+    # key — never the key itself; config.yaml is committed.
+    api_key_env: str = ""
+
+
+class GenerationSection(BaseModel):
+    """Named chat models + the active switch — same shape as profiles:
+    declare several, flip `active` (or VAKIL_CHAT_MODEL env) to switch."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    active: str
+    models: dict[str, GenerationConfig]
+
+    @model_validator(mode="after")
+    def _wire_names(self) -> "GenerationSection":
+        for key, model in self.models.items():
+            model.name = key
+        if self.active not in self.models:
+            raise ValueError(
+                f"generation.active '{self.active}' not in models "
+                f"{sorted(self.models)}"
+            )
+        return self
+
+
 class ComponentsConfig(BaseModel):
     """Pipeline-LEVEL component selection — parser/metadata output in output/
     is shared by every profile, so these are global, not per-profile.
@@ -135,6 +196,11 @@ class AppConfig(BaseModel):
 
     active_profile: str
     components: ComponentsConfig = Field(default_factory=ComponentsConfig)
+    generation: GenerationSection = Field(
+        default_factory=lambda: GenerationSection(
+            active="llama", models={"llama": GenerationConfig()}
+        )
+    )
     profiles: dict[str, Profile]
 
     @model_validator(mode="after")
@@ -167,6 +233,17 @@ def _load(path_str: str) -> AppConfig:
 
 def get_config() -> AppConfig:
     return _load(str(_config_path()))
+
+
+def get_chat_config(name: str | None = None) -> GenerationConfig:
+    """Resolve a chat model: explicit name > VAKIL_CHAT_MODEL env > active."""
+    gen = get_config().generation
+    resolved = name or os.environ.get("VAKIL_CHAT_MODEL") or gen.active
+    if resolved not in gen.models:
+        raise ConfigError(
+            f"unknown chat model '{resolved}'; available: {sorted(gen.models)}"
+        )
+    return gen.models[resolved]
 
 
 def get_profile(name: str | None = None) -> Profile:
