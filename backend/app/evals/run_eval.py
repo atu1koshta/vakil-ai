@@ -26,7 +26,7 @@ import re
 from pathlib import Path
 
 from ..config import get_profile
-from ..embeddings import get_embedder
+from ..retrieval import retrieve
 from ..vector_store import open_store
 
 EVALS_DIR = Path(__file__).resolve().parent.parent.parent / "evals"
@@ -63,7 +63,6 @@ def main() -> None:
 
     profile = get_profile(args.profile)
     tag = args.tag or profile.name
-    embedder = get_embedder(profile)
     questions = [
         json.loads(line)
         for line in (EVALS_DIR / "eval_set.jsonl").read_text().splitlines()
@@ -78,7 +77,9 @@ def main() -> None:
 
     details = []
     for q in questions:
-        hits = store.search(embedder.embed_query(q["question"]), k=MAX_K)
+        # The SAME path /search and /ask use — eval numbers must describe the
+        # code production runs, not a parallel reimplementation.
+        hits = retrieve(q["question"], k=MAX_K, profile=profile)
         gold = shingles(normalize_words(q["gold_passage"]))
 
         doc_rank = next(

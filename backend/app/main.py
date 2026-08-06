@@ -44,19 +44,18 @@ def list_profiles() -> dict:
 @app.get("/search")
 def search(q: str, k: int = 5, profile: str | None = None) -> list[dict]:
     """Semantic search over indexed chunks (run `python -m app.indexer` first).
-    `profile` targets a specific experiment profile; default = active profile."""
-    from .config import ConfigError, get_profile
-    from .embeddings import EmbeddingError, get_embedder
-    from .vector_store import IndexConfigMismatch, open_store
+    Thin transport wrapper over retrieval.retrieve() — the shared path /ask
+    and evals also use. `profile` targets an experiment profile; default =
+    active profile."""
+    from .config import ConfigError
+    from .embeddings import EmbeddingError
+    from .retrieval import retrieve
+    from .vector_store import IndexConfigMismatch
 
     try:
-        prof = get_profile(profile)
+        rows = retrieve(q, k=k, profile=profile)
     except ConfigError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    try:
-        vector = get_embedder(prof).embed_query(q)
-        with open_store(prof) as store:
-            rows = store.search(vector, k=k)
     except (EmbeddingError, IndexConfigMismatch) as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     for r in rows:
