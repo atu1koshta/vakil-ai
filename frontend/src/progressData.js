@@ -89,24 +89,28 @@ export const PHASES = [
       {
         id: 's3-context',
         title: 'Step 3 — Context assembly',
-        status: 'next',
-        note: 'Retrieved rows → labeled evidence block. Where k-vs-noise, lost-in-the-middle, and the token budget against num_ctx get decided.',
+        status: 'done',
+        when: '2026-08-07',
+        note: 'app/context.py: assemble() is the single evidence-building path between retrieve() and the chat model — /ask and evals will share it, same seam pattern as retrieve().',
+        lesson:
+          'k cap and token budget are two knobs for two diseases: the budget guards num_ctx overflow (a hardware limit), the k cap guards noise dilution (a quality judgment). First real run proved they bind independently — 12 chunks retrieved, all would have FIT the 7k budget, but the k cap kept only 8. Eviction is whole-chunk from the worst-ranked tail: the exact opposite of Ollama’s silent front-truncation, which eats the system prompt first.',
         components: [
-          { name: 'provenance labels [doc:chunk | section]', status: 'next', note: 'without labels the model cannot cite' },
-          { name: 'k selection / noise dilution', status: 'next' },
-          { name: 'token budget accounting', status: 'next', note: 'system + chunks + question + answer headroom must fit num_ctx' },
+          { name: 'provenance labels [doc:chunk | section]', status: 'done', note: 'format_chunk(): header + case title + raw text — the anchor the citation contract points at' },
+          { name: 'k selection / noise dilution', status: 'done', note: 'max_chunks cap, independent of budget; junk stays junk at any context size' },
+          { name: 'token budget accounting', status: 'done', note: 'budget = num_ctx − system − question − answer headroom; tiktoken cl100k as good-enough approximation, headroom absorbs the error' },
+          { name: 'AssembledContext accounting', status: 'done', note: 'kept/dropped/token counts returned, not just the string — /ask reports the cut, step 5 asserts on eviction' },
         ],
       },
       {
         id: 's4-ask',
         title: 'Step 4 — Grounding prompt + /ask',
-        status: 'pending',
+        status: 'next',
         note: 'First end-to-end grounded answer. Prompt engineering debuts here.',
         components: [
-          { name: 'restriction clause', status: 'pending', note: 'answer ONLY from provided excerpts' },
-          { name: 'escape hatch', status: 'pending', note: '"if insufficient, say so" — the single biggest anti-hallucination lever' },
-          { name: 'citation contract [doc_id:chunk_id]', status: 'pending' },
-          { name: '/ask endpoint', status: 'pending' },
+          { name: 'restriction clause', status: 'next', note: 'answer ONLY from provided excerpts' },
+          { name: 'escape hatch', status: 'next', note: '"if insufficient, say so" — the single biggest anti-hallucination lever' },
+          { name: 'citation contract [doc_id:chunk_id]', status: 'next', note: 'points at the provenance labels assemble() writes' },
+          { name: '/ask endpoint', status: 'next' },
         ],
       },
       {
