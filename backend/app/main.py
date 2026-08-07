@@ -63,6 +63,43 @@ def search(q: str, k: int = 5, profile: str | None = None) -> list[dict]:
     return rows
 
 
+@app.get("/ask")
+def ask_question(
+    q: str, k: int = 12, model: str | None = None, profile: str | None = None
+) -> dict:
+    """Grounded QA: retrieve -> assemble -> chat model, with citations.
+    Thin transport wrapper over rag.ask() — the same path generation evals
+    (2d) will score. `model` picks a generation.models entry; `profile`
+    picks the index searched."""
+    from .config import ConfigError
+    from .embeddings import EmbeddingError
+    from .llm import GenerationError
+    from .rag import ask
+    from .vector_store import IndexConfigMismatch
+
+    try:
+        result = ask(q, k=k, model=model, profile=profile)
+    except ConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (EmbeddingError, IndexConfigMismatch) as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except GenerationError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    ctx = result.context
+    return {
+        "question": result.question,
+        "answer": result.answer,
+        "model": result.model,
+        "grounded": result.grounded,
+        "context": {
+            "kept": ctx.kept_ids,
+            "dropped": ctx.dropped_ids,
+            "context_tokens": ctx.context_tokens,
+            "budget_tokens": ctx.budget_tokens,
+        },
+    }
+
+
 @app.post("/process-document", response_model=ProcessResult)
 async def process_document(
     file: UploadFile, background_tasks: BackgroundTasks, force: bool = False

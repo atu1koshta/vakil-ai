@@ -81,6 +81,10 @@ class AssembledContext:
     def kept_ids(self) -> list[str]:
         return [f"{r['doc_id']}:{r['chunk_id']}" for r in self.kept]
 
+    @property
+    def dropped_ids(self) -> list[str]:
+        return [f"{r['doc_id']}:{r['chunk_id']}" for r in self.dropped]
+
 
 def assemble(
     rows: list[dict],

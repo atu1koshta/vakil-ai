@@ -104,24 +104,28 @@ export const PHASES = [
       {
         id: 's4-ask',
         title: 'Step 4 — Grounding prompt + /ask',
-        status: 'next',
-        note: 'First end-to-end grounded answer. Prompt engineering debuts here.',
+        status: 'done',
+        when: '2026-08-07',
+        note: 'app/rag.py: ask() = retrieve() → assemble() → chat(). First end-to-end grounded answer. /ask is a thin transport wrapper, same seam pattern — generation evals (2d) will score rag.ask() itself.',
+        lesson:
+          'First live run: escape hatch fired unprompted ("the excerpts do not establish whether...") and every claim carried a chunk citation — but the model substituted the human-readable case title for the doc_id slug in citations, keeping only chunk_id exact. "Use the exact ids from its header" was not literal enough. Fix deliberately deferred to step 5: prompt engineering is learned against witnessed failures.',
         components: [
-          { name: 'restriction clause', status: 'next', note: 'answer ONLY from provided excerpts' },
-          { name: 'escape hatch', status: 'next', note: '"if insufficient, say so" — the single biggest anti-hallucination lever' },
-          { name: 'citation contract [doc_id:chunk_id]', status: 'next', note: 'points at the provenance labels assemble() writes' },
-          { name: '/ask endpoint', status: 'next' },
+          { name: 'restriction clause', status: 'done', note: 'answer ONLY from provided excerpts; recognizing a case name ≠ permission to use memory' },
+          { name: 'escape hatch', status: 'done', note: '"if insufficient, say so" — the single biggest anti-hallucination lever' },
+          { name: 'citation contract [doc_id:chunk_id]', status: 'done', note: 'points at the provenance labels assemble() writes; slug-vs-title drift witnessed (see lesson)' },
+          { name: '/ask endpoint', status: 'done', note: 'reports kept/dropped ids + token accounting; canned refusal (no LLM call) when nothing retrievable' },
         ],
       },
       {
         id: 's5-break',
         title: 'Step 5 — Break-it lab',
-        status: 'pending',
+        status: 'next',
         note: 'Deliberately trigger each failure mode and watch it happen. Prompt engineering is learned here, not in step 4.',
         components: [
-          { name: 'parametric leakage probe', status: 'pending', note: 'ask about a case NOT in the corpus' },
-          { name: 'retrieval miss probe', status: 'pending', note: 'exact-identifier queries dense search should whiff' },
-          { name: 'context overflow probe', status: 'pending', note: 'oversized k vs num_ctx truncation' },
+          { name: 'parametric leakage probe', status: 'next', note: 'ask about a case NOT in the corpus' },
+          { name: 'retrieval miss probe', status: 'next', note: 'exact-identifier queries dense search should whiff' },
+          { name: 'context overflow probe', status: 'next', note: 'oversized k vs num_ctx truncation' },
+          { name: 'citation drift probe', status: 'next', note: 'witnessed in step 4: title substituted for doc_id slug — tighten the contract here' },
         ],
       },
       {
