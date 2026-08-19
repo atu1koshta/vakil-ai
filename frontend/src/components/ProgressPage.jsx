@@ -69,6 +69,17 @@ function StepCard({ step, isLast }) {
 
         {step.note && <p className="mt-1.5 text-xs text-slate-500">{step.note}</p>}
 
+        {step.doc && (
+          <a
+            href={step.doc.href}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-flex items-center gap-1.5 rounded border border-sky-200 bg-sky-50/60 px-2 py-1 text-xs font-medium text-sky-700 hover:bg-sky-100"
+          >
+            <span aria-hidden>📄</span> {step.doc.label}
+          </a>
+        )}
+
         {step.trail && <Trail trail={step.trail} />}
 
         {step.lesson && (

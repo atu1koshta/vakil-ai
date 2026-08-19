@@ -121,6 +121,11 @@ export const PHASES = [
         title: 'Step 5 — Break-it lab',
         status: 'next',
         note: 'Deliberately trigger each failure mode and watch it happen. Prompt engineering is learned here, not in step 4.',
+        doc: {
+          label: 'Break-it lab knowledge base — probe theory, examples, witnessed-failure log',
+          // symlinked into frontend/public/docs/ so Vite serves the repo's docs/ copy
+          href: '/docs/break-it-lab.md',
+        },
         components: [
           { name: 'parametric leakage probe', status: 'next', note: 'ask about a case NOT in the corpus' },
           { name: 'retrieval miss probe', status: 'next', note: 'exact-identifier queries dense search should whiff' },
