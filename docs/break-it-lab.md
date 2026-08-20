@@ -208,7 +208,7 @@ The general principle: **an instruction is not a mechanism**. The prompt asks fo
 
 Drift was witnessed before the probe existed, so probe 4 is less discovery than systematic characterization: run grounded questions repeatedly, parse every citation, measure the exact-match rate against the `kept` list. Then tighten the prompt against the witnessed failures specifically — literal copyability ("copy the id exactly as it appears between the brackets in the header"), and reframe the format example so it cannot be parroted as decoration — and measure the rate again. Prompt engineering against witnessed failures, with a number attached; never against imagined ones.
 
-*Status: drift witnessed (step 4), intermittency witnessed (probe 1 runs), systematic measurement pending.*
+*Status: measured. Four grounded runs (three local deepseek-r1:8b, one hosted deepseek-api) produced 16 citations, all 16 exact-slug matches against their `kept` lists — 0% syntactic drift this session. Caveats owned: local generation proved deterministic (two runs byte-identical), so the effective sample is 3 independent generations over 2 question shapes; step 4's title-substitution and the template-parrot artifact remain witnessed historical facts. Verdict: drift is rare, not absent — too rare to justify prompt surgery on this evidence, which is itself the method working (no engineering against unwitnessed failures). The durable answer stays the syntactic validator: parse every citation, resolve against `kept`, flag mismatches — effectively free per answer, queued alongside 2d. Side-observation: the hosted model followed the contract more tightly than the local one (contract-exact `[slug:chunk]` form, quote-level grounding).*
 
 ### 4.5 Criticality and scale
 
@@ -240,4 +240,4 @@ And one lesson across all four: **build the fix after witnessing the failure.** 
 | Probe 1-C | blended leakage | "Was Gopalan overruled?" (partial evidence) | **Pass** — refused the gap despite knowing Maneka Gandhi; template placeholder parroted |
 | Probe 2 | retrieval miss | `AIR 1962 SC 406` (present in Ayyasamy, 3×) vs conceptual control | **Witnessed** — target absent from top-20 on identifier query, score band compressed (0.547–0.564); conceptual control hit 5/5 at 0.75–0.82. 2b earned |
 | Probe 3 | overflow | oversized k; budget-only eviction; raw bypass | **Witnessed** — k cap and budget proven independent (8 kept vs 14 kept); escape hatch held at 6.9k-token pressure; bypass revealed current Ollama hard-fails (`exceed_context_size_error`) instead of silently truncating — budget now an availability guard, prediction overturned |
-| Probe 4 | drift measurement | repeated grounded runs, parse rate | pending |
+| Probe 4 | drift measurement | 4 grounded runs × citation parse vs `kept` | **Measured** — 16/16 exact (0% drift); local generation deterministic so effective n=3; historical drift sightings stand; validator queued with 2d instead of prompt surgery |

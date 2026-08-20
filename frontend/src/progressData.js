@@ -119,30 +119,33 @@ export const PHASES = [
       {
         id: 's5-break',
         title: 'Step 5 — Break-it lab',
-        status: 'next',
+        status: 'done',
+        when: '2026-08-20',
         note: 'Deliberately trigger each failure mode and watch it happen. Prompt engineering is learned here, not in step 4.',
+        lesson:
+          'Probes beat assumptions: 2 predictions confirmed, 1 overturned, 1 unplanned failure found. Overturned: current Ollama hard-rejects oversized prompts (exceed_context_size_error) instead of silently front-truncating — the budget now guards availability, not safety; dependency assumptions rot between versions. Unplanned: dissent-as-holding — model reported a dissenting opinion as the Court’s decision with perfectly accurate citations. Faithfulness ≠ correctness; opinion boundaries are destroyed at chunking time (all labeled "Judgment"), so the fix is pipeline-level, not prompt-level.',
         doc: {
           label: 'Break-it lab knowledge base — probe theory, examples, witnessed-failure log',
           // symlinked into frontend/public/docs/ so Vite serves the repo's docs/ copy
           href: '/docs/break-it-lab.md',
         },
         components: [
-          { name: 'parametric leakage probe', status: 'next', note: 'ask about a case NOT in the corpus' },
-          { name: 'retrieval miss probe', status: 'next', note: 'exact-identifier queries dense search should whiff' },
-          { name: 'context overflow probe', status: 'next', note: 'oversized k vs num_ctx truncation' },
-          { name: 'citation drift probe', status: 'next', note: 'witnessed in step 4: title substituted for doc_id slug — tighten the contract here' },
+          { name: 'parametric leakage probe', status: 'done', note: '3/3 passes: Kesavananda refused, Gopalan answered + cited, overruling gap held despite parametric knowledge' },
+          { name: 'retrieval miss probe', status: 'done', note: 'witnessed: "AIR 1962 SC 406" absent from top-20 (score band 0.547–0.564); conceptual control 5/5 at 0.75–0.82 — 2b earned' },
+          { name: 'context overflow probe', status: 'done', note: 'k cap and budget proven independent (8 vs 14 kept); escape hatch held at 6.9k pressure; Ollama now errors loudly on overflow' },
+          { name: 'citation drift probe', status: 'done', note: 'measured 16/16 exact citations (0% drift, n=3 generations); validator queued with 2d instead of prompt surgery' },
         ],
       },
       {
         id: 's2b-hybrid',
         title: '2b — Hybrid retrieval (BM25 + RRF)',
-        status: 'deferred',
+        status: 'next',
         trail: {
-          symptom: 'Dense search whiffs exact identifiers: "AIR 1951 SC 118", "Section 302 IPC" (to be witnessed in step 5).',
+          symptom: 'WITNESSED (step 5): "AIR 1962 SC 406" — its document absent from dense top-20, score band compressed to 0.017 wide; the same doc hit 5/5 on a conceptual query.',
           diagnosis: 'Embeddings smear rare identifier strings into generic legalness; lexical BM25 rewards exactly those rare terms.',
           cure: 'SQLite FTS5 table beside chunk_vectors, fuse rankings with RRF (rank-based, no score normalization). Lands inside retrieve().',
         },
-        note: 'Deferred until the skeleton runs and dense-only baseline numbers are frozen — a lift needs something to lift over.',
+        note: 'Unlocked by step 5: symptom witnessed live, dense-only baseline frozen (step4-baseline.json) — the lift now has something to lift over.',
         components: [
           { name: 'FTS5 BM25 index', status: 'deferred' },
           { name: 'RRF fusion', status: 'deferred' },
