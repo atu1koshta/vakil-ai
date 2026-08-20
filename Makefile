@@ -1,4 +1,4 @@
-.PHONY: install backend frontend dev
+.PHONY: install backend frontend dev eval
 
 # One-time setup: backend venv + deps, frontend node_modules
 install:
@@ -16,3 +16,9 @@ frontend:
 # Both together; Ctrl-C stops both
 dev:
 	$(MAKE) -j2 backend frontend
+
+# Retrieval eval — writes backend/evals/results/<TAG>.json (needs Ollama)
+# Usage: make eval TAG=dense-baseline [PROFILE=nomic-default]
+# TAG defaults to profile name; PROFILE defaults to active profile
+eval:
+	cd backend && if [ -f .env ]; then set -a; . ./.env; set +a; fi; .venv/bin/python -m app.evals.run_eval $(TAG) $(if $(PROFILE),--profile $(PROFILE))
