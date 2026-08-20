@@ -156,7 +156,7 @@ The honest way to hold this belief is as a *prediction about evals*, split by qu
 - On conceptual queries: hybrid should roughly *match* dense-only (lexical contributes little, and the fusion shouldn't drag the good ranking down).
 - Aggregate metrics will therefore *understate* the improvement — a big lift on 20% of queries averages into a modest overall bump. **Always split eval results by query type.** The split is the lesson; the aggregate hides it.
 
-This is exactly why our 2b plan pins a frozen dense-only baseline (`step4-baseline.json`) before touching anything: the claim "hybrid helps" must cash out as *these specific queries moved, those didn't, as predicted*.
+This is exactly why our 2b plan pins a frozen dense-only baseline (`dense-baseline.json`) before touching anything: the claim "hybrid helps" must cash out as *these specific queries moved, those didn't, as predicted*.
 
 ### 3.3 Advanced: when you'd legitimately skip hybrid
 
@@ -229,7 +229,7 @@ The architecture already left a parking spot. `retrieve()` (Step 2) is the singl
 
 Not "the code merged" — the journal's standard is *numbers before opinions*:
 
-1. Dense-only baseline: frozen (`step4-baseline.json`, done in Step 5).
+1. Dense-only baseline: frozen (`dense-baseline.json` — nomic-default, 50 questions; doc_recall@5 0.96, passage_recall@5 0.72, MRR 0.929).
 2. Build hybrid, run the same eval, **split by query type**.
 3. Predictions on record before running: citation-type queries jump (the witnessed miss becomes a hit); conceptual queries hold steady (fusion doesn't degrade the good case); aggregate shows a modest bump that would have hidden the story.
 4. A prediction overturned is a finding, not a failure — the break-it lab already taught us that (the Ollama truncation assumption died the same way).

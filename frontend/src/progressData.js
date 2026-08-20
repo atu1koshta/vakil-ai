@@ -145,7 +145,7 @@ export const PHASES = [
           diagnosis: 'Embeddings smear rare identifier strings into generic legalness; lexical BM25 rewards exactly those rare terms.',
           cure: 'SQLite FTS5 table beside chunk_vectors, fuse rankings with RRF (rank-based, no score normalization). Lands inside retrieve().',
         },
-        note: 'Unlocked by step 5: symptom witnessed live, dense-only baseline frozen (step4-baseline.json) — the lift now has something to lift over.',
+        note: 'Unlocked by step 5: symptom witnessed live, dense-only baseline frozen (dense-baseline.json) — the lift now has something to lift over.',
         doc: {
           label: 'Hybrid retrieval knowledge base — dense vs lexical, BM25 built from repairs, RRF fusion',
           // symlinked into frontend/public/docs/ so Vite serves the repo's docs/ copy
