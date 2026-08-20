@@ -170,7 +170,7 @@ Force the overflow deliberately: request oversized `k` so assembly must evict, a
 - Eviction path: `dropped` list populates from the worst-ranked tail; answer quality degrades gracefully or not at all; safety instructions provably intact (the escape hatch still fires on an absent-case question even at max context pressure).
 - Truncation path: witness the "before" picture — the same probe-1 questions leaking once the restriction clause has been silently eaten. This is the probe that proves *why* the budget exists.
 
-*Status: pending.*
+*Status: witnessed, with a prediction overturned.* The eviction path passed both tests: with k=50 the cap still kept exactly 8 chunks (identical context to the k=12 run), and with the cap lifted to 50 the budget packed 14 chunks to 6902 of 6936 tokens, evicted 36 from the tail, and the escape hatch still fired cleanly under maximum context pressure — the two knobs bind independently, as designed. But the bypass test failed to reproduce silent truncation: the current Ollama version **rejects oversized prompts loudly** (`exceed_context_size_error`, reporting 8521 prompt tokens vs 8192 `num_ctx` — even a 4% overflow errors, no truncation at any size). The silent front-truncation documented in Step 1 was real then and is gone now: the failure mode migrated from silent corruption to hard error between dependency versions. The budget's justification therefore *changed without our code changing*: today it guards availability (without it, any fat question would surface as a 502 instead of an answer built from trimmed evidence); historically it guarded safety. Both are real; the lesson is that assumptions about dependency behavior are versioned and rot silently — the probe is what catches the rot.
 
 ### 3.5 Criticality and scale
 
@@ -239,5 +239,5 @@ And one lesson across all four: **build the fix after witnessing the failure.** 
 | Probe 1-B | control | Gopalan (present, famous) | **Pass** on calibration + exact citations; **new failure witnessed**: dissent reported as the holding (faithful-but-wrong) |
 | Probe 1-C | blended leakage | "Was Gopalan overruled?" (partial evidence) | **Pass** — refused the gap despite knowing Maneka Gandhi; template placeholder parroted |
 | Probe 2 | retrieval miss | `AIR 1962 SC 406` (present in Ayyasamy, 3×) vs conceptual control | **Witnessed** — target absent from top-20 on identifier query, score band compressed (0.547–0.564); conceptual control hit 5/5 at 0.75–0.82. 2b earned |
-| Probe 3 | overflow | oversized k; raw truncation | pending |
+| Probe 3 | overflow | oversized k; budget-only eviction; raw bypass | **Witnessed** — k cap and budget proven independent (8 kept vs 14 kept); escape hatch held at 6.9k-token pressure; bypass revealed current Ollama hard-fails (`exceed_context_size_error`) instead of silently truncating — budget now an availability guard, prediction overturned |
 | Probe 4 | drift measurement | repeated grounded runs, parse rate | pending |
