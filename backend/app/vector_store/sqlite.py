@@ -18,7 +18,19 @@ Learning notes:
   META_SCHEMA versions the STAMP FORMAT itself — when the fingerprint recipe
   changes (e.g. chunking gained a `strategy` field), stores stamped under the
   old scheme are re-stamped instead of false-alarming a mismatch.
+- chunk_fts is an FTS5 EXTERNAL-CONTENT table over chunk_vectors: BM25 text
+  search without duplicating a single payload byte. External-content tables
+  don't track writes, so the indexer rebuilds after indexing and
+  lexical_search self-heals on row-count mismatch (rebuild is a full scan —
+  milliseconds at this corpus size, so simpler than sync triggers). Indexing
+  case_title/section/text as separate columns makes lexical search "enriched"
+  the same way embedding is: a citation in the title matches every chunk.
+- FTS5 query syntax treats punctuation and uppercase AND/OR/NOT specially, so
+  user questions are sanitized to quoted alphanumeric tokens joined with OR —
+  OR semantics (any term can match) is what BM25 ranking expects; FTS5's
+  implicit AND would demand every question word appear in one chunk.
 """
+import re
 import sqlite3
 from pathlib import Path
 
@@ -55,6 +67,11 @@ class SqliteVectorStore(VectorIndex):
                 meta_key TEXT PRIMARY KEY,
                 meta_value TEXT NOT NULL
             );
+            CREATE VIRTUAL TABLE IF NOT EXISTS chunk_fts USING fts5(
+                case_title, section, text,
+                content='chunk_vectors', content_rowid='id',
+                tokenize='unicode61'
+            );
             """
         )
         self._verify_meta()
@@ -66,9 +83,12 @@ class SqliteVectorStore(VectorIndex):
             "dim": str(self.dim),
             "fingerprint": self.profile.fingerprint(),
         }
-        stored = dict(
+        # Compare identity keys only — index_meta also carries operational
+        # state (fts_chunks rebuild stamp) that must not look like a mismatch.
+        all_meta = dict(
             self.conn.execute("SELECT meta_key, meta_value FROM index_meta").fetchall()
         )
+        stored = {k: v for k, v in all_meta.items() if k in expected}
         # Fresh store, pre-meta legacy file, or stamp from an older fingerprint
         # scheme: (re-)stamp. Content-hash dedup still protects chunk-level
         # integrity on the next index run.
@@ -146,6 +166,55 @@ class SqliteVectorStore(VectorIndex):
                 "score": float(scores[i]),
             }
             for i in top
+        ]
+
+    def rebuild_lexical_index(self) -> None:
+        """Re-derive chunk_fts from chunk_vectors (external-content rebuild).
+        Stamps the chunk count it indexed: external-content tables read
+        COUNT(*)/SELECT through to the content table, so the table LOOKS
+        populated even when the inverted index was never built — the stamp
+        is the only reliable staleness signal."""
+        self.conn.execute("INSERT INTO chunk_fts(chunk_fts) VALUES('rebuild')")
+        self.conn.execute(
+            "INSERT INTO index_meta (meta_key, meta_value) VALUES ('fts_chunks', ?) "
+            "ON CONFLICT(meta_key) DO UPDATE SET meta_value = excluded.meta_value",
+            (str(self.count_chunks()),),
+        )
+        self.conn.commit()
+
+    def lexical_search(self, query: str, k: int = 5) -> list[dict]:
+        """BM25 top-k over case_title + section + text. Returns the same row
+        shape as search(); `score` = negated FTS5 bm25() (higher = better,
+        matching the dense convention — but the SCALES are unrelated, which
+        is exactly why hybrid fuses by RANK, not score)."""
+        tokens = re.findall(r"[A-Za-z0-9]+", query)
+        if not tokens:
+            return []
+        match = " OR ".join(f'"{t}"' for t in tokens)  # quoted: never operators
+        stamp = self.conn.execute(
+            "SELECT meta_value FROM index_meta WHERE meta_key = 'fts_chunks'"
+        ).fetchone()
+        if stamp is None or int(stamp[0]) != self.count_chunks():
+            self.rebuild_lexical_index()  # never built, or chunks changed since
+        rows = self.conn.execute(
+            """
+            SELECT cv.doc_id, cv.chunk_id, cv.section, cv.case_title, cv.text,
+                   bm25(chunk_fts) AS rank
+            FROM chunk_fts JOIN chunk_vectors cv ON cv.id = chunk_fts.rowid
+            WHERE chunk_fts MATCH ? ORDER BY rank LIMIT ?
+            """,
+            (match, k),
+        ).fetchall()
+        return [
+            {
+                "doc_id": r["doc_id"],
+                "chunk_id": r["chunk_id"],
+                "section": r["section"],
+                "case_title": r["case_title"],
+                "text": r["text"],
+                "score": -float(r["rank"]),
+            }
+            for r in rows
         ]
 
     def count_chunks(self) -> int:

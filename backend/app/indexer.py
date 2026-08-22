@@ -86,6 +86,8 @@ def index_doc_by_id(doc_id: str, profile_name: str | None = None) -> None:
     try:
         with open_store(get_profile(profile_name)) as store:
             embedded, skipped = index_document(store, OUTPUT_DIR / doc_id)
+            if embedded:
+                store.rebuild_lexical_index()
         logging.getLogger("vakil").info(
             "indexed %s: %d embedded, %d skipped", doc_id, embedded, skipped
         )
@@ -141,6 +143,7 @@ def main() -> None:
                 f"{doc_dir.name}: {embedded} embedded, {skipped} skipped "
                 f"({time.perf_counter() - start:.1f}s)"
             )
+        store.rebuild_lexical_index()  # external-content FTS: re-derive once per run
         print(f"store total: {store.count_chunks()} chunks")
 
 

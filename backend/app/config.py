@@ -28,6 +28,8 @@ from functools import lru_cache
 from pathlib import Path
 
 import yaml
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -102,6 +104,23 @@ class IndexingConfig(BaseModel):
     enrich: bool = True
 
 
+class RetrievalConfig(BaseModel):
+    """Query-time retrieval strategy. Deliberately OUTSIDE fingerprint():
+    the lexical (FTS5) index is derived from payloads the store already
+    holds, so flipping dense<->hybrid never invalidates vectors — it only
+    changes how the same index is queried."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    strategy: Literal["dense", "hybrid"] = "dense"
+    # Depth each ranker contributes BEFORE fusion (retrieve wide, fuse, cut
+    # to k). Only used by hybrid.
+    candidates: int = Field(50, ge=1)
+    # RRF constant: flattens the top of 1/(k+rank) so single-list rank noise
+    # can't dominate; 60 is the empirical default from Cormack et al. 2009.
+    rrf_k: int = Field(60, ge=0)
+
+
 class Profile(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -109,6 +128,7 @@ class Profile(BaseModel):
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     chunking: ChunkingConfig = Field(default_factory=ChunkingConfig)
     indexing: IndexingConfig = Field(default_factory=IndexingConfig)
+    retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
     # Registry name of a VectorIndex implementation (vector_store._STORES).
     store: str = "sqlite"
     db_path: str | None = None  # relative to backend/; default vectors-<name>.db

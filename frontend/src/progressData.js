@@ -43,6 +43,11 @@ export const PHASES = [
         status: 'done',
         when: 'Phase 1',
         note: 'Numbers before opinions: every retrieval change must move these metrics or it does not ship.',
+        doc: {
+          label: 'Measurement primer — how to read every scoreboard: metrics, slices, the 12-question caveat',
+          // symlinked into frontend/public/docs/ so Vite serves the repo's docs/ copy
+          href: '/docs/eval-measurement.md',
+        },
         components: [
           { name: 'stratified eval set (decade × size)', status: 'done' },
           { name: 'doc_recall@k / passage_recall@k / MRR', status: 'done', note: 'passage_recall is the chunker signal — moves when boundaries move' },
@@ -139,22 +144,32 @@ export const PHASES = [
       {
         id: 's2b-hybrid',
         title: '2b — Hybrid retrieval (BM25 + RRF)',
-        status: 'next',
+        status: 'done',
+        when: '2026-08-22',
         trail: {
           symptom: 'WITNESSED (step 5): "AIR 1962 SC 406" — its document absent from dense top-20, score band compressed to 0.017 wide; the same doc hit 5/5 on a conceptual query.',
           diagnosis: 'Embeddings smear rare identifier strings into generic legalness; lexical BM25 rewards exactly those rare terms.',
           cure: 'SQLite FTS5 table beside chunk_vectors, fuse rankings with RRF (rank-based, no score normalization). Lands inside retrieve().',
         },
-        note: 'Unlocked by step 5: symptom witnessed live, dense-only baseline frozen (dense-baseline.json) — the lift now has something to lift over.',
-        doc: {
-          label: 'Hybrid retrieval knowledge base — dense vs lexical, BM25 built from repairs, RRF fusion',
-          // symlinked into frontend/public/docs/ so Vite serves the repo's docs/ copy
-          href: '/docs/hybrid-retrieval.md',
-        },
+        note: 'Landed inside retrieve() — callers unchanged. Query-time knob (retrieval: in config.yaml), outside the index fingerprint: FTS5 derives from stored payloads, so dense<->hybrid flips never invalidate vectors.',
+        lesson:
+          'Citation recall@5: 0.0 dense → 0.333 hybrid at canonical RRF settings (c50/k60) → 0.833 at c20/k10; conceptual types rose to 1.0 (not flat as predicted). The 0.333 taught the real lesson: when one ranker is pure noise for a query class, deep candidate lists + flat RRF produce FALSE CONSENSUS — junk chunks matching mid-list in both rankers outrank the correct single-list #1 (witnessed live before the eval said so). Also: COUNT(*) on an FTS5 external-content table reads through to the content table — the index can look populated while never built; rebuild state needs its own stamp.',
+        docs: [
+          {
+            label: 'Hybrid retrieval knowledge base — dense vs lexical, BM25 built from repairs, RRF fusion',
+            // symlinked into frontend/public/docs/ so Vite serves the repo's docs/ copy
+            href: '/docs/hybrid-retrieval.md',
+          },
+          {
+            label: 'Implementation field guide — every file, every choice, both bugs, the knob sweep',
+            href: '/docs/hybrid-implementation.md',
+          },
+        ],
         components: [
-          { name: 'FTS5 BM25 index', status: 'deferred' },
-          { name: 'RRF fusion', status: 'deferred' },
-          { name: 'before/after eval by question type', status: 'deferred', note: 'expect lift on citation queries, none on conceptual — the split is the lesson' },
+          { name: 'citation-type eval questions', status: 'done', note: '12 questions, each citation verified unique to one indexed doc; dense-baseline-v2 froze the 0.0' },
+          { name: 'FTS5 BM25 index', status: 'done', note: 'external-content table over chunk_vectors (title+section+text = enriched lexical); rebuild stamped in index_meta' },
+          { name: 'RRF fusion', status: 'done', note: 'inside retrieve(); rank-based, quoted-OR query sanitization; score is an RRF sum, not a similarity' },
+          { name: 'before/after eval by question type', status: 'done', note: 'knob sweep c50/k60→c20/k10 in evals/results/hybrid-*.json; residual misses (prose dilution, common-token citations) queued for 2c' },
         ],
       },
       {

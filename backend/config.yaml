@@ -83,6 +83,17 @@ profiles:
       encoding: cl100k_base
     indexing:
       enrich: true
+    # Query-time strategy — outside the index fingerprint: FTS5 is derived
+    # from stored payloads, so dense<->hybrid flips never invalidate vectors.
+    retrieval:
+      strategy: hybrid # dense | hybrid (BM25 + RRF)
+      # Swept in 2b (see evals/results/hybrid-*.json): canonical c50/k60 got
+      # citation recall@5 only 0.333 — with dense a pure-noise ranker on
+      # citation queries, deep lists + flat RRF let junk chunks matching in
+      # BOTH lists ("false consensus") outrank lexical's correct #1. c20/k10
+      # = 0.833 with conceptual types all at 1.0.
+      candidates: 20 # depth per ranker before fusion
+      rrf_k: 10 # sharper than the Cormack 60 default — see note above
 
   # Same model, smaller chunks — isolates the chunking variable.
   nomic-small-chunks:

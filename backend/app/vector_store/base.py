@@ -37,6 +37,18 @@ class VectorIndex(ABC):
     @abstractmethod
     def search(self, query_vector: list[float], k: int = 5) -> list[dict]: ...
 
+    # Lexical (BM25) search is an OPTIONAL capability — concrete defaults so
+    # a backend without a text index still satisfies the interface; hybrid
+    # retrieval fails loudly against such a store instead of silently.
+    def lexical_search(self, query: str, k: int = 5) -> list[dict]:
+        raise NotImplementedError(
+            f"{type(self).__name__} has no lexical index; hybrid retrieval "
+            "needs a store that implements lexical_search"
+        )
+
+    def rebuild_lexical_index(self) -> None:  # no-op where unsupported
+        pass
+
     @abstractmethod
     def count_chunks(self) -> int: ...
 
