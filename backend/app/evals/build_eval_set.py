@@ -5,6 +5,8 @@ Checks per question:
 - gold_passage actually occurs in the document text (whitespace-normalized —
   PDF extraction line breaks are noise)
 - passage word count within bounds, qtype is known, one question per doc
+  per qtype (citation questions deliberately reuse docs that already carry
+  a conceptual question — same doc, different retrieval probe)
 
 Usage:
     python -m app.evals.build_eval_set
@@ -19,7 +21,7 @@ EVALS_DIR = Path(__file__).resolve().parent.parent.parent / "evals"
 TEXT_DIR = EVALS_DIR / "text"
 QUESTIONS_DIR = EVALS_DIR / "questions"
 
-QTYPES = {"holding", "facts", "principle", "paraphrase"}
+QTYPES = {"holding", "facts", "principle", "paraphrase", "citation"}
 
 
 def normalize(text: str) -> str:
@@ -35,7 +37,7 @@ def main() -> None:
 
     rows: list[dict] = []
     errors: list[str] = []
-    seen_docs: set[str] = set()
+    seen_docs: set[tuple[str, str]] = set()
 
     for batch in sorted(QUESTIONS_DIR.glob("batch_*.jsonl")):
         for line_no, line in enumerate(batch.read_text().splitlines(), 1):
@@ -52,11 +54,11 @@ def main() -> None:
             if slug not in doc_texts:
                 errors.append(f"{where}: unknown doc_slug {slug!r}")
                 continue
-            if slug in seen_docs:
-                errors.append(f"{where}: duplicate question for {slug}")
-                continue
             if row.get("qtype") not in QTYPES:
                 errors.append(f"{where}: bad qtype {row.get('qtype')!r}")
+                continue
+            if (slug, row["qtype"]) in seen_docs:
+                errors.append(f"{where}: duplicate {row['qtype']} question for {slug}")
                 continue
 
             passage = row.get("gold_passage", "")
@@ -70,7 +72,7 @@ def main() -> None:
                 errors.append(f"{where}: empty question/answer")
                 continue
 
-            seen_docs.add(slug)
+            seen_docs.add((slug, row["qtype"]))
             rows.append(row)
 
     rows.sort(key=lambda r: r["doc_slug"])

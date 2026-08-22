@@ -1,0 +1,1064 @@
+{
+  "summary": {
+    "tag": "dense-baseline-v2",
+    "profile": {
+      "name": "nomic-default",
+      "embedding": {
+        "provider": "ollama",
+        "base_url": "http://localhost:11434",
+        "model": "nomic-embed-text",
+        "dim": 768,
+        "batch_size": 64,
+        "timeout_s": 120.0,
+        "document_prefix": "search_document: ",
+        "query_prefix": "search_query: "
+      },
+      "chunking": {
+        "strategy": "section-aware",
+        "target_tokens": 700,
+        "max_tokens": 900,
+        "min_tokens": 120,
+        "overlap_tokens": 80,
+        "encoding": "cl100k_base"
+      },
+      "indexing": {
+        "enrich": true
+      },
+      "store": "sqlite",
+      "db_path": "vectors.db",
+      "fingerprint": "22b30bcf7b68"
+    },
+    "questions": 62,
+    "chunks": 1412,
+    "doc_recall@1": 0.726,
+    "passage_recall@1": 0.21,
+    "doc_recall@3": 0.774,
+    "passage_recall@3": 0.484,
+    "doc_recall@5": 0.774,
+    "passage_recall@5": 0.581,
+    "doc_recall@10": 0.823,
+    "passage_recall@10": 0.71,
+    "mrr": 0.751,
+    "by_type": {
+      "citation": {
+        "n": 12,
+        "doc_recall@5": 0.0,
+        "passage_recall@5": 0.0
+      },
+      "facts": {
+        "n": 13,
+        "doc_recall@5": 0.923,
+        "passage_recall@5": 0.846
+      },
+      "holding": {
+        "n": 20,
+        "doc_recall@5": 0.95,
+        "passage_recall@5": 0.8
+      },
+      "paraphrase": {
+        "n": 7,
+        "doc_recall@5": 1.0,
+        "passage_recall@5": 0.429
+      },
+      "principle": {
+        "n": 10,
+        "doc_recall@5": 1.0,
+        "passage_recall@5": 0.6
+      }
+    }
+  },
+  "details": [
+    {
+      "id": "q001",
+      "doc_slug": "2ec-to-govt-school-education-vs-thiru-r-govindaswamy-ors-on-21-february-2014-1",
+      "qtype": "facts",
+      "question": "What was the procedural history in the case where part-time sweepers of a State school education department, appointed on various dates between 1987 and 2001, obtained a Madras High Court direction to regularise their services on a full-time basis with time scale of pay after completing ten years?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "2ec-to-govt-school-education-vs-thiru-r-govindaswamy-ors-on-21-february-2014-1",
+        "2ec-to-govt-school-education-vs-thiru-r-govindaswamy-ors-on-21-february-2014-1",
+        "2ec-to-govt-school-education-vs-thiru-r-govindaswamy-ors-on-21-february-2014-1",
+        "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1",
+        "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1"
+      ]
+    },
+    {
+      "id": "q002",
+      "doc_slug": "2ec-to-govt-school-education-vs-thiru-r-govindaswamy-ors-on-21-february-2014-1",
+      "qtype": "citation",
+      "question": "AIR 2006 SC 1806",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "a-k-roy-anr-vs-voltas-limited-on-1-december-1972-1",
+        "mrs-roshan-sam-vs-b-r-cotton-mills-ltd-and-ors-on-6-april-1990-1",
+        "a-v-fernandez-vs-the-state-of-kerala-on-2-april-1957-1",
+        "2the-commissioner-of-income-tax-vs-m-s-filmistan-ltd-on-21-february-1961-1",
+        "a-thangal-kunju-musaliar-vs-m-venkitachalam-potti-and-on-20-december-1955-1"
+      ]
+    },
+    {
+      "id": "q003",
+      "doc_slug": "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+      "qtype": "facts",
+      "question": "In the challenge to a Central Government order under Section 396 of the Companies Act, 1956 compulsorily amalgamating a national spot commodities exchange with its parent technology company, what did the Department of Consumer Affairs direct the exchange to do on 12.07.2013 without adjudicating the pending show cause notice regarding violation of its FCRA exemption?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1"
+      ]
+    },
+    {
+      "id": "q004",
+      "doc_slug": "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+      "qtype": "citation",
+      "question": "What does the judgment say about the decision reported in 1952 SCR 135?",
+      "doc_rank": 10,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-thangal-kunju-musaliar-vs-m-venkitachalam-potti-and-on-20-december-1955-1",
+        "abdul-khader-ors-vs-state-of-mysore-on-30-april-1953-1",
+        "a-thangal-kunju-musaliar-vs-m-venkitachalam-potti-and-on-20-december-1955-1"
+      ]
+    },
+    {
+      "id": "q005",
+      "doc_slug": "a-a-calton-vs-the-director-of-education-another-on-25-march-1983-1",
+      "qtype": "holding",
+      "question": "Did the Supreme Court uphold the appointment of a minority institution's Principal made by the Director of Education under Section 16-F(4) of the U.P. Intermediate Education Act, 1921 after U.P. Act 26 of 1975 had withdrawn that power, where the selection process had commenced in 1973 before the amendment?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-a-calton-vs-the-director-of-education-another-on-25-march-1983-1",
+        "a-a-calton-vs-the-director-of-education-another-on-25-march-1983-1",
+        "a-a-calton-vs-the-director-of-education-another-on-25-march-1983-1",
+        "a-a-calton-vs-the-director-of-education-another-on-25-march-1983-1",
+        "a-a-calton-vs-the-director-of-education-another-on-25-march-1983-1"
+      ]
+    },
+    {
+      "id": "q006",
+      "doc_slug": "a-a-haja-muniuddian-vs-indian-railways-on-17-november-1992-1",
+      "qtype": "holding",
+      "question": "Can the Railway Claims Tribunal permit a claimant who lacks the means to pay the fee prescribed under Section 16(2) of the Railway Claims Tribunal Act, 1987 to prosecute his compensation claim as an indigent person by invoking the principle of Order XXXIII of the Code of Civil Procedure?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-a-haja-muniuddian-vs-indian-railways-on-17-november-1992-1",
+        "a-a-haja-muniuddian-vs-indian-railways-on-17-november-1992-1",
+        "a-a-haja-muniuddian-vs-indian-railways-on-17-november-1992-1",
+        "a-a-haja-muniuddian-vs-indian-railways-on-17-november-1992-1",
+        "a-a-haja-muniuddian-vs-indian-railways-on-17-november-1992-1"
+      ]
+    },
+    {
+      "id": "q007",
+      "doc_slug": "a-a-haja-muniuddian-vs-indian-railways-on-17-november-1992-1",
+      "qtype": "citation",
+      "question": "Which case discusses (1992) 4 SCC 736 and in what context?",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "a-t-zambre-and-others-vs-kartar-krishna-shashtri-on-17-december-1980-1",
+        "a-t-zambre-and-others-vs-kartar-krishna-shashtri-on-17-december-1980-1",
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "common-cause-a-registered-vs-union-of-india-ors-on-28-november-1996-1",
+        "achyut-das-vs-state-of-assam-on-29-october-1993-1"
+      ]
+    },
+    {
+      "id": "q008",
+      "doc_slug": "a-abdul-rashid-khan-dead-and-ors-vs-p-a-k-a-shahul-hamid-and-ors-on-3-may-2000-1",
+      "qtype": "holding",
+      "question": "Where some co-heirs of a deceased Muslim owner signed an agreement to sell an inherited house but the two sister co-sharers never joined it, did the Supreme Court hold that specific performance could be decreed against the signing co-sharers to the extent of their 5/6th share while refusing the alternative decree of partition in the same suit?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-abdul-rashid-khan-dead-and-ors-vs-p-a-k-a-shahul-hamid-and-ors-on-3-may-2000-1",
+        "a-abdul-rashid-khan-dead-and-ors-vs-p-a-k-a-shahul-hamid-and-ors-on-3-may-2000-1",
+        "a-abdul-rashid-khan-dead-and-ors-vs-p-a-k-a-shahul-hamid-and-ors-on-3-may-2000-1",
+        "a-abdul-rashid-khan-dead-and-ors-vs-p-a-k-a-shahul-hamid-and-ors-on-3-may-2000-1",
+        "a-abdul-rashid-khan-dead-and-ors-vs-p-a-k-a-shahul-hamid-and-ors-on-3-may-2000-1"
+      ]
+    },
+    {
+      "id": "q009",
+      "doc_slug": "a-abdul-rashid-khan-dead-and-ors-vs-p-a-k-a-shahul-hamid-and-ors-on-3-may-2000-1",
+      "qtype": "citation",
+      "question": "(2000) 10 SCC 636",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1",
+        "579ajeet-singh-singhvi-etc-vs-state-of-rajasthan-and-others-etc-on-20-february-1",
+        "2the-commissioner-of-income-tax-vs-m-s-filmistan-ltd-on-21-february-1961-1",
+        "a-mohammed-farook-vs-jt-secy-to-g-o-i-ors-on-2-november-1999-1",
+        "mrs-roshan-sam-vs-b-r-cotton-mills-ltd-and-ors-on-6-april-1990-1"
+      ]
+    },
+    {
+      "id": "q010",
+      "doc_slug": "a-alangarasamy-vs-state-of-tamil-nadu-and-anr-on-13-april-1987-1",
+      "qtype": "paraphrase",
+      "question": "Where a person confined under the 1974 law against foreign-exchange violations and smuggling complained that the Tamil rendering of the grounds supplied to him spoke of stopping the movement of contraband while the English text spoke of curbing smuggling itself, did the mismatch between the two language texts invalidate his custody?",
+      "doc_rank": 3,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-alangarasamy-vs-state-of-tamil-nadu-and-anr-on-13-april-1987-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1"
+      ]
+    },
+    {
+      "id": "q011",
+      "doc_slug": "a-alangarasamy-vs-state-of-tamil-nadu-and-anr-on-13-april-1987-1",
+      "qtype": "citation",
+      "question": "What does the judgment say about the decision reported in (1987) 3 SCC 159?",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1"
+      ]
+    },
+    {
+      "id": "q012",
+      "doc_slug": "a-ayyasamy-vs-a-paramasivam-ors-on-4-october-2016-1",
+      "qtype": "facts",
+      "question": "In the case where a Section 8 application under the Arbitration and Conciliation Act, 1996 was resisted on the ground of serious fraud by partners of a Tirunelveli hotel run under a 1994 family partnership deed, what act of misappropriation of the firm's funds was alleged against the brother who took over the hotel's administration?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-ayyasamy-vs-a-paramasivam-ors-on-4-october-2016-1",
+        "a-ayyasamy-vs-a-paramasivam-ors-on-4-october-2016-1",
+        "a-ayyasamy-vs-a-paramasivam-ors-on-4-october-2016-1",
+        "a-ayyasamy-vs-a-paramasivam-ors-on-4-october-2016-1",
+        "a-ayyasamy-vs-a-paramasivam-ors-on-4-october-2016-1"
+      ]
+    },
+    {
+      "id": "q013",
+      "doc_slug": "a-ayyasamy-vs-a-paramasivam-ors-on-4-october-2016-1",
+      "qtype": "citation",
+      "question": "Which case discusses (2015) 1 SCC 32 and in what context?",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "a-andisamy-chettiar-vs-a-subburaj-chettiar-on-8-december-2015-1",
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "a-s-krishnappa-chettiar-ors-vs-nachiappa-chettiar-ors-on-7-march-1963-1",
+        "a-t-zambre-and-others-vs-kartar-krishna-shashtri-on-17-december-1980-1"
+      ]
+    },
+    {
+      "id": "q014",
+      "doc_slug": "a-b-abdul-kadir-ors-etc-vs-state-of-kerala-on-12-november-1975-1",
+      "qtype": "holding",
+      "question": "In upholding the Kerala Luxury Tax on Tobacco (Validation) Act, 1964, did the Supreme Court hold that the validated licence fee on the stocking and vending of tobacco was a luxury tax within the State legislature's competence rather than an excise duty beyond it?",
+      "doc_rank": 1,
+      "passage_rank": 8,
+      "best_coverage": 0.718,
+      "top_docs": [
+        "a-b-abdul-kadir-ors-etc-vs-state-of-kerala-on-12-november-1975-1",
+        "a-b-abdul-kadir-ors-etc-vs-state-of-kerala-on-12-november-1975-1",
+        "a-b-abdul-kadir-ors-etc-vs-state-of-kerala-on-12-november-1975-1",
+        "a-b-abdul-kadir-ors-etc-vs-state-of-kerala-on-12-november-1975-1",
+        "a-b-abdul-kadir-ors-etc-vs-state-of-kerala-on-12-november-1975-1"
+      ]
+    },
+    {
+      "id": "q015",
+      "doc_slug": "a-b-abdulkadir-and-others-vs-the-state-of-kerala-and-another-an-on-24-january-19",
+      "qtype": "facts",
+      "question": "In the case where tobacco dealers of the former Cochin and Travancore areas challenged licence fees for storage of tobacco, what replaced the system of auction sales of A class and B class shops after the Central Excises and Salt Act, 1944 was extended to the Part B State on April 1, 1950?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-b-abdulkadir-and-others-vs-the-state-of-kerala-and-another-an-on-24-january-19",
+        "a-b-abdulkadir-and-others-vs-the-state-of-kerala-and-another-an-on-24-january-19",
+        "a-b-abdulkadir-and-others-vs-the-state-of-kerala-and-another-an-on-24-january-19",
+        "a-b-abdulkadir-and-others-vs-the-state-of-kerala-and-another-an-on-24-january-19",
+        "a-b-abdulkadir-and-others-vs-the-state-of-kerala-and-another-an-on-24-january-19"
+      ]
+    },
+    {
+      "id": "q016",
+      "doc_slug": "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1",
+      "qtype": "holding",
+      "question": "Can the Supreme Court, invoking Article 142 of the Constitution, reduce a sentence below the statutory minimum prescribed by the Prevention of Corruption Act, 1988 on grounds of long lapse of time since the trap, the trivial Rs.200 bribe amount, or the convict's loss of employment?",
+      "doc_rank": 1,
+      "passage_rank": 6,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1",
+        "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1",
+        "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1",
+        "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1",
+        "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1"
+      ]
+    },
+    {
+      "id": "q017",
+      "doc_slug": "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1",
+      "qtype": "citation",
+      "question": "(1995) 2 SCC 7",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "2ec-to-govt-school-education-vs-thiru-r-govindaswamy-ors-on-21-february-2014-1",
+        "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1",
+        "a-k-a-ct-v-ct-meenakshisundaram-vs-a-k-a-ct-v-ct-venkatachalam-on-23-february-19",
+        "a-k-t-k-m-vishnudatta-andharjanam-vs-commissioner-of-agricultural-income-on-5-ma",
+        "a-mohammed-farook-vs-jt-secy-to-g-o-i-ors-on-2-november-1999-1"
+      ]
+    },
+    {
+      "id": "q018",
+      "doc_slug": "a-b-govardhan-vs-p-ragothaman-on-29-august-2024-1",
+      "qtype": "facts",
+      "question": "In a dispute where a Rs.10 lakh business loan was split into two registered mortgages and four promissory notes because stamp duty could not be paid, what security did the borrower furnish at the panchayat held on 24.06.2000 after defaulting on interest under the promissory notes?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-b-govardhan-vs-p-ragothaman-on-29-august-2024-1",
+        "a-b-govardhan-vs-p-ragothaman-on-29-august-2024-1",
+        "a-b-govardhan-vs-p-ragothaman-on-29-august-2024-1",
+        "a-b-govardhan-vs-p-ragothaman-on-29-august-2024-1",
+        "a-b-govardhan-vs-p-ragothaman-on-29-august-2024-1"
+      ]
+    },
+    {
+      "id": "q019",
+      "doc_slug": "a-b-govardhan-vs-p-ragothaman-on-29-august-2024-1",
+      "qtype": "citation",
+      "question": "What does the judgment say about the decision reported in AIR 1950 SC 272?",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-vishwanath-rao-etc-vs-the-state-of-mysore-ors-on-16-february-1968-1"
+      ]
+    },
+    {
+      "id": "q020",
+      "doc_slug": "a-c-ananthaswamy-others-vs-boraiah-dead-by-lrs-on-20-august-2004-1",
+      "qtype": "facts",
+      "question": "In a case where a defendant sued under Section 9 CPC to cancel an ex parte declaration and injunction decree dated 18.8.1975, alleging fraud because the decree-holder had deliberately given a wrong name and address so summons could not be served, what became of the regular appeal he had earlier filed against that decree?",
+      "doc_rank": 10,
+      "passage_rank": null,
+      "best_coverage": 0.085,
+      "top_docs": [
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+        "a-p-s-r-t-c-ors-vs-g-srinivas-reddy-ors-on-24-february-2006-1",
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1"
+      ]
+    },
+    {
+      "id": "q021",
+      "doc_slug": "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1",
+      "qtype": "holding",
+      "question": "Did the Supreme Court accept that the twelve-year limitation under Article 136 of the Limitation Act 1963 for executing a final partition decree remains suspended until the decree is engrossed on non-judicial stamp paper, in view of Sections 2(15) and 35 of the Indian Stamp Act 1899?",
+      "doc_rank": 1,
+      "passage_rank": 5,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1",
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1",
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1",
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1",
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1"
+      ]
+    },
+    {
+      "id": "q022",
+      "doc_slug": "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1",
+      "qtype": "citation",
+      "question": "Which case discusses 1950 SCR 852 and in what context?",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-b-abdulkadir-and-others-vs-the-state-of-kerala-and-another-an-on-24-january-19",
+        "a-b-c-laminart-pvt-ltd-anr-vs-a-p-agencies-salem-on-13-march-1989-1",
+        "a-a-shirdone-etc-vs-saheb-h-tajbhokhari-on-20-march-1985-1",
+        "abdul-rehman-mahomed-yusuf-vs-mahomed-haji-ahmad-agbotwalaand-on-15-september-19"
+      ]
+    },
+    {
+      "id": "q023",
+      "doc_slug": "a-c-estates-landlords-vs-serajuddin-co-tenants-on-16-february-1973-1",
+      "qtype": "holding",
+      "question": "Where standard rent fixed by a Rent Controller under the West Bengal Premises Rent Control (Temporary Provisions) Act 1950 was attacked on the ground that the 1956 Tenancy Act's provision continuing pending proceedings under the repealed Act violated Article 14, could that constitutional question be examined in appeals and revisions arising from the Rent Controller's orders?",
+      "doc_rank": 1,
+      "passage_rank": 3,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-c-estates-landlords-vs-serajuddin-co-tenants-on-16-february-1973-1",
+        "a-c-estates-landlords-vs-serajuddin-co-tenants-on-16-february-1973-1",
+        "a-c-estates-landlords-vs-serajuddin-co-tenants-on-16-february-1973-1",
+        "a-a-shirdone-etc-vs-saheb-h-tajbhokhari-on-20-march-1985-1",
+        "a-v-g-p-chettiar-sons-ors-vs-t-palanisamy-gounder-on-8-may-2002-1"
+      ]
+    },
+    {
+      "id": "q024",
+      "doc_slug": "a-c-estates-landlords-vs-serajuddin-co-tenants-on-16-february-1973-1",
+      "qtype": "citation",
+      "question": "(1973) 2 SCC 324",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "a-k-roy-anr-vs-voltas-limited-on-1-december-1972-1",
+        "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1",
+        "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1",
+        "a-k-a-ct-v-ct-meenakshisundaram-vs-a-k-a-ct-v-ct-venkatachalam-on-23-february-19",
+        "a-hajee-abdul-shakoor-and-company-vs-state-of-madras-on-7-may-1964-1"
+      ]
+    },
+    {
+      "id": "q025",
+      "doc_slug": "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1",
+      "qtype": "principle",
+      "question": "What is the settled position on the Election Commission's powers under Article 324 where the Representation of the People Act 1951 and the Conduct of Election Rules 1961 already prescribe the method of voting by ballot?",
+      "doc_rank": 1,
+      "passage_rank": 6,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1",
+        "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1",
+        "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1",
+        "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1",
+        "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1"
+      ]
+    },
+    {
+      "id": "q026",
+      "doc_slug": "a-d-partha-sarathy-vs-state-of-andhra-pradesh-on-7-may-1965-1",
+      "qtype": "principle",
+      "question": "Under Section 12(2) of the Limitation Act 1963, can time spent obtaining a certified copy of the judgment before the High Court's refusal of leave to appeal be excluded in computing the 60-day limitation for a special leave petition to the Supreme Court?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-d-partha-sarathy-vs-state-of-andhra-pradesh-on-7-may-1965-1",
+        "a-d-partha-sarathy-vs-state-of-andhra-pradesh-on-7-may-1965-1",
+        "a-d-partha-sarathy-vs-state-of-andhra-pradesh-on-7-may-1965-1",
+        "a-d-partha-sarathy-vs-state-of-andhra-pradesh-on-7-may-1965-1",
+        "2the-commissioner-of-income-tax-vs-m-s-filmistan-ltd-on-21-february-1961-1"
+      ]
+    },
+    {
+      "id": "q027",
+      "doc_slug": "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+      "qtype": "holding",
+      "question": "Under the Criminal Procedure Code 1973, did the Supreme Court uphold a pardon tendered to an approver by the Chief Judicial Magistrate after the Sessions Judge forwarded the pardon application in a murder-robbery case that had already been committed to the Court of Session?",
+      "doc_rank": 1,
+      "passage_rank": 4,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+        "a-j-peiris-vs-state-of-madras-on-18-march-1954-1",
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1"
+      ]
+    },
+    {
+      "id": "q028",
+      "doc_slug": "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+      "qtype": "citation",
+      "question": "What does the judgment say about the decision reported in (1997) 11 SCC 720?",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "a-c-arulappan-vs-smt-ahalya-naik-on-10-august-2001-1",
+        "a-thangal-kunju-musaliar-vs-m-venkitachalam-potti-and-on-20-december-1955-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1"
+      ]
+    },
+    {
+      "id": "q029",
+      "doc_slug": "a-i-railway-parcel-goods-porters-vs-union-of-india-uoi-and-ors-on-22-august-2003",
+      "qtype": "facts",
+      "question": "In litigation by parcel porters engaged through contractors at Northern Railway stations who sought regularization, what did the Assistant Labour Commissioner (Central), Lucknow find in the enquiry conducted pursuant to the Supreme Court's directions of 30.11.1992?",
+      "doc_rank": 1,
+      "passage_rank": 3,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-i-railway-parcel-goods-porters-vs-union-of-india-uoi-and-ors-on-22-august-2003",
+        "a-i-railway-parcel-goods-porters-vs-union-of-india-uoi-and-ors-on-22-august-2003",
+        "a-i-railway-parcel-goods-porters-vs-union-of-india-uoi-and-ors-on-22-august-2003",
+        "a-i-railway-parcel-goods-porters-vs-union-of-india-uoi-and-ors-on-22-august-2003",
+        "a-i-railway-parcel-goods-porters-vs-union-of-india-uoi-and-ors-on-22-august-2003"
+      ]
+    },
+    {
+      "id": "q030",
+      "doc_slug": "a-i-railway-parcel-goods-porters-vs-union-of-india-uoi-and-ors-on-22-august-2003",
+      "qtype": "citation",
+      "question": "Which case discusses (2003) 11 SCC 590 and in what context?",
+      "doc_rank": null,
+      "passage_rank": null,
+      "best_coverage": 0.0,
+      "top_docs": [
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1",
+        "a-g-varadarajulu-anr-vs-the-state-of-tamil-nadu-ors-on-23-march-1998-1",
+        "amalendu-pal-jhantu-vs-state-of-west-bengal-on-11-november-2009-1",
+        "579ajeet-singh-singhvi-etc-vs-state-of-rajasthan-and-others-etc-on-20-february-1",
+        "abdul-rehman-mahomed-yusuf-vs-mahomed-haji-ahmad-agbotwalaand-on-15-september-19"
+      ]
+    },
+    {
+      "id": "q031",
+      "doc_slug": "a-jayaram-anr-etc-etc-vs-state-of-andhra-pradesh-byc-b-i-on-13-july-1995-1",
+      "qtype": "principle",
+      "question": "Where a High Court reversed the acquittals of district agricultural officers accused of certifying fictitious transport of imported fertilisers from Kakinada port, what standard did the Supreme Court apply for basing a conviction on circumstantial evidence?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-jayaram-anr-etc-etc-vs-state-of-andhra-pradesh-byc-b-i-on-13-july-1995-1",
+        "a-jayaram-anr-etc-etc-vs-state-of-andhra-pradesh-byc-b-i-on-13-july-1995-1",
+        "a-jayaram-anr-etc-etc-vs-state-of-andhra-pradesh-byc-b-i-on-13-july-1995-1",
+        "a-jayaram-anr-etc-etc-vs-state-of-andhra-pradesh-byc-b-i-on-13-july-1995-1",
+        "a-jayaram-anr-etc-etc-vs-state-of-andhra-pradesh-byc-b-i-on-13-july-1995-1"
+      ]
+    },
+    {
+      "id": "q032",
+      "doc_slug": "a-k-gopalan-and-another-vs-noordeen-on-15-september-1969-1",
+      "qtype": "holding",
+      "question": "In a contempt case over a statement alleging a planned conspiracy to murder during the Kerala Bandh that was published in a newspaper two days after the suspects' arrest, from what point did the Supreme Court hold that proceedings in court became imminent?",
+      "doc_rank": 1,
+      "passage_rank": 3,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-k-gopalan-and-another-vs-noordeen-on-15-september-1969-1",
+        "a-k-gopalan-and-another-vs-noordeen-on-15-september-1969-1",
+        "a-k-gopalan-and-another-vs-noordeen-on-15-september-1969-1",
+        "a-k-gopalan-and-another-vs-noordeen-on-15-september-1969-1",
+        "a-k-gopalan-and-another-vs-noordeen-on-15-september-1969-1"
+      ]
+    },
+    {
+      "id": "q033",
+      "doc_slug": "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+      "qtype": "paraphrase",
+      "question": "In the first challenge to India's 1950 preventive custody statute, did the top court read the constitutional protection of individual freedom as importing fairness ideals from United States jurisprudence, or as satisfied by whatever rules the national or provincial lawmaking bodies enact?",
+      "doc_rank": 1,
+      "passage_rank": null,
+      "best_coverage": 0.022,
+      "top_docs": [
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1"
+      ]
+    },
+    {
+      "id": "q034",
+      "doc_slug": "a-k-mallu-vs-puranachandra-rao-anr-on-16-december-1966-1",
+      "qtype": "holding",
+      "question": "Did the Supreme Court hold that release after due admonition under Section 562(1-A) of the Code of Criminal Procedure, 1898 is confined to property offences like theft and cheating, or that it extends to any Indian Penal Code offence punishable with not more than two years' imprisonment, such as wrongful confinement under Section 342?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-k-mallu-vs-puranachandra-rao-anr-on-16-december-1966-1",
+        "a-k-mallu-vs-puranachandra-rao-anr-on-16-december-1966-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1"
+      ]
+    },
+    {
+      "id": "q035",
+      "doc_slug": "a-k-roy-anr-vs-voltas-limited-on-1-december-1972-1",
+      "qtype": "principle",
+      "question": "For excise valuation under Section 4(a) of the Central Excises and Salt Act, 1944, what conditions must sales to wholesale dealers under discount agreements satisfy for their price to qualify as the 'wholesale cash price' when the manufacturer sells 90 to 95 per cent of its production directly to consumers?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-k-roy-anr-vs-voltas-limited-on-1-december-1972-1",
+        "a-k-roy-anr-vs-voltas-limited-on-1-december-1972-1",
+        "a-k-roy-anr-vs-voltas-limited-on-1-december-1972-1",
+        "a-k-roy-anr-vs-voltas-limited-on-1-december-1972-1",
+        "a-k-roy-anr-vs-voltas-limited-on-1-december-1972-1"
+      ]
+    },
+    {
+      "id": "q036",
+      "doc_slug": "a-k-t-k-m-vishnudatta-andharjanam-vs-commissioner-of-agricultural-income-on-5-ma",
+      "qtype": "paraphrase",
+      "question": "If an estate owner grubs up mature timber together with the roots so the ground can be replanted with rubber, is the lump sum from that one-off disposal chargeable as agricultural earnings or does it count as the realisation of a fixed asset?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-k-t-k-m-vishnudatta-andharjanam-vs-commissioner-of-agricultural-income-on-5-ma",
+        "a-k-t-k-m-vishnudatta-andharjanam-vs-commissioner-of-agricultural-income-on-5-ma",
+        "a-k-t-k-m-vishnudatta-andharjanam-vs-commissioner-of-agricultural-income-on-5-ma",
+        "a-p-housing-board-vs-k-manohar-reddy-ors-on-30-september-2010-1",
+        "a-p-housing-board-vs-k-manohar-reddy-ors-on-30-september-2010-1"
+      ]
+    },
+    {
+      "id": "q037",
+      "doc_slug": "a-kanthamani-vs-nasreen-ahmed-on-6-march-2017-1",
+      "qtype": "principle",
+      "question": "To satisfy the readiness-and-willingness requirement of Section 16(c) of the Specific Relief Act, 1963, must a purchaser suing for specific performance actually produce the balance sale consideration or establish a concluded scheme for financing it, or is proof of financial capacity sufficient?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 0.97,
+      "top_docs": [
+        "a-kanthamani-vs-nasreen-ahmed-on-6-march-2017-1",
+        "a-kanthamani-vs-nasreen-ahmed-on-6-march-2017-1",
+        "a-kanthamani-vs-nasreen-ahmed-on-6-march-2017-1",
+        "a-nawab-john-ors-vs-v-n-subramaniyam-on-3-july-2012-1",
+        "a-nawab-john-ors-vs-v-n-subramaniyam-on-3-july-2012-1"
+      ]
+    },
+    {
+      "id": "q038",
+      "doc_slug": "a-m-allison-vs-b-l-sen-and-connected-appeal-on-21-december-1956-1",
+      "qtype": "facts",
+      "question": "In a dispute where Assam tea-estate managers, after a March 1952 minimum-wage notification raised daily basic wages to 12 annas for male and 11 annas for female pluckers, refused the extra 6-pies-per-seer payment unless workers plucked more than 24 and 22 seers, what daily plucking task and wage had prevailed before the notification?",
+      "doc_rank": 1,
+      "passage_rank": 4,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-m-allison-vs-b-l-sen-and-connected-appeal-on-21-december-1956-1",
+        "a-m-allison-vs-b-l-sen-and-connected-appeal-on-21-december-1956-1",
+        "a-m-allison-vs-b-l-sen-and-connected-appeal-on-21-december-1956-1",
+        "a-m-allison-vs-b-l-sen-and-connected-appeal-on-21-december-1956-1",
+        "a-m-allison-vs-b-l-sen-and-connected-appeal-on-21-december-1956-1"
+      ]
+    },
+    {
+      "id": "q039",
+      "doc_slug": "a-manju-vs-prajwal-revanna-prajwal-r-on-13-december-2021-1",
+      "qtype": "facts",
+      "question": "In a case where the second-placed candidate from the Hassan parliamentary constituency in the 2019 general election alleged that the winner had filed a false nomination affidavit suppressing assets, what threshold application did the returned candidate move to have the election petition thrown out?",
+      "doc_rank": 1,
+      "passage_rank": 6,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-manju-vs-prajwal-revanna-prajwal-r-on-13-december-2021-1",
+        "a-manju-vs-prajwal-revanna-prajwal-r-on-13-december-2021-1",
+        "a-neelalohithadasan-nadar-vs-george-mascrene-on-11-april-1994-1",
+        "a-neelalohithadasan-nadar-vs-george-mascrene-on-11-april-1994-1",
+        "a-neelalohithadasan-nadar-vs-george-mascrene-on-11-april-1994-1"
+      ]
+    },
+    {
+      "id": "q040",
+      "doc_slug": "a-manoharan-and-ors-vs-union-of-india-and-ors-on-14-february-2008-1",
+      "qtype": "facts",
+      "question": "In the litigation where diploma-holding engineers of a major port trust in Chennai, blocked by 1977 statutory regulations that made a civil engineering degree essential for the post of Executive Engineer, filed a writ petition in 1993, what promotion ratio between graduate and diploma engineers did they ask for?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-manoharan-and-ors-vs-union-of-india-and-ors-on-14-february-2008-1",
+        "a-manoharan-and-ors-vs-union-of-india-and-ors-on-14-february-2008-1",
+        "a-k-subraman-ors-etc-vs-union-of-india-and-ors-on-11-december-1974-1",
+        "a-k-subraman-ors-etc-vs-union-of-india-and-ors-on-11-december-1974-1",
+        "a-k-subraman-ors-etc-vs-union-of-india-and-ors-on-11-december-1974-1"
+      ]
+    },
+    {
+      "id": "q041",
+      "doc_slug": "a-mohammed-farook-vs-jt-secy-to-g-o-i-ors-on-2-november-1999-1",
+      "qtype": "facts",
+      "question": "In a COFEPOSA matter where a detention order dated 25 February 1999 against a Chennai businessman was executed only on 5 April 1999, even though he had twice appeared before the Additional Chief Metropolitan Magistrate in the interim, what explanation did the detaining authority offer for the roughly 40-day delay?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-mohammed-farook-vs-jt-secy-to-g-o-i-ors-on-2-november-1999-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-mohammed-farook-vs-jt-secy-to-g-o-i-ors-on-2-november-1999-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1",
+        "a-k-gopalan-vs-the-state-of-madras-union-of-india-on-19-may-1950-1"
+      ]
+    },
+    {
+      "id": "q042",
+      "doc_slug": "a-nawab-john-ors-vs-v-n-subramaniyam-on-3-july-2012-1",
+      "qtype": "principle",
+      "question": "Under Section 149 of the Code of Civil Procedure, does a plaintiff whose plaint was filed within limitation but with deficit court fee have an absolute right to make good the deficiency after the limitation period expires, or is the court's discretion conditional on a legally acceptable explanation for the delayed payment?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-nawab-john-ors-vs-v-n-subramaniyam-on-3-july-2012-1",
+        "a-nawab-john-ors-vs-v-n-subramaniyam-on-3-july-2012-1",
+        "a-nawab-john-ors-vs-v-n-subramaniyam-on-3-july-2012-1",
+        "a-nawab-john-ors-vs-v-n-subramaniyam-on-3-july-2012-1",
+        "a-nawab-john-ors-vs-v-n-subramaniyam-on-3-july-2012-1"
+      ]
+    },
+    {
+      "id": "q043",
+      "doc_slug": "a-neelalohithadasan-nadar-vs-george-mascrene-on-11-april-1994-1",
+      "qtype": "paraphrase",
+      "question": "In an assembly election from Kerala decided by a wafer-thin margin, where certain persons enrolled at two polling stations managed to mark papers at both, can the court trying the dispute trace and discard the duplicates despite the guarantee that no elector may be forced to reveal whom he chose?",
+      "doc_rank": 1,
+      "passage_rank": null,
+      "best_coverage": 0.021,
+      "top_docs": [
+        "a-neelalohithadasan-nadar-vs-george-mascrene-on-11-april-1994-1",
+        "a-c-jose-vs-sivan-pillai-ors-on-5-march-1984-1",
+        "a-neelalohithadasan-nadar-vs-george-mascrene-on-11-april-1994-1",
+        "a-neelalohithadasan-nadar-vs-george-mascrene-on-11-april-1994-1",
+        "a-neelalohithadasan-nadar-vs-george-mascrene-on-11-april-1994-1"
+      ]
+    },
+    {
+      "id": "q044",
+      "doc_slug": "a-p-housing-board-vs-k-manohar-reddy-ors-on-30-september-2010-1",
+      "qtype": "principle",
+      "question": "When the market value of a large tract of undeveloped agricultural land acquired under the Land Acquisition Act, 1894 is fixed using sale deeds of small developed plots as exemplars, within what percentage range may the deduction towards development charges fall, and what determines the appropriate cut within that range?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-p-housing-board-vs-k-manohar-reddy-ors-on-30-september-2010-1",
+        "a-p-housing-board-vs-k-manohar-reddy-ors-on-30-september-2010-1",
+        "a-p-housing-board-vs-k-manohar-reddy-ors-on-30-september-2010-1",
+        "a-p-housing-board-vs-k-manohar-reddy-ors-on-30-september-2010-1",
+        "a-p-housing-board-vs-k-manohar-reddy-ors-on-30-september-2010-1"
+      ]
+    },
+    {
+      "id": "q045",
+      "doc_slug": "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1",
+      "qtype": "facts",
+      "question": "In a case where temporary junior engineers appointed under rule 10(a)(i)(1) of the Madras State and Subordinate Services Rules were allotted to Kerala on States reorganisation, which of the three alternatives recommended by the Government of India on 16 February 1963 for fixing inter-State seniority did the Kerala Government adopt by its order dated 10 May 1963?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 0.832,
+      "top_docs": [
+        "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1",
+        "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1",
+        "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1",
+        "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1",
+        "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1"
+      ]
+    },
+    {
+      "id": "q046",
+      "doc_slug": "a-p-s-r-t-c-ors-vs-g-srinivas-reddy-ors-on-24-february-2006-1",
+      "qtype": "paraphrase",
+      "question": "Can a writ court compel a state transport undertaking to take onto its own rolls the sweepers who cleaned its buses and depot premises through an outside agency, merely because that work never ceases, when the government has issued no statutory ban on engaging such workers indirectly?",
+      "doc_rank": 1,
+      "passage_rank": 1,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-p-s-r-t-c-ors-vs-g-srinivas-reddy-ors-on-24-february-2006-1",
+        "2ec-to-govt-school-education-vs-thiru-r-govindaswamy-ors-on-21-february-2014-1",
+        "a-a-padmanbhan-vs-the-state-of-kerala-on-16-february-2018-1",
+        "a-p-s-r-t-c-ors-vs-g-srinivas-reddy-ors-on-24-february-2006-1",
+        "a-i-railway-parcel-goods-porters-vs-union-of-india-uoi-and-ors-on-22-august-2003"
+      ]
+    },
+    {
+      "id": "q047",
+      "doc_slug": "a-periakaruppan-chettiar-vs-state-of-tamil-nadu-ors-on-15-january-1971-1",
+      "qtype": "holding",
+      "question": "Where a reconstituted committee selecting candidates for Tamil Nadu medical colleges distributed the 75 interview marks among the five prescribed heads according to its own discretion instead of equally, what did the Supreme Court hold about that procedure and the resulting selections?",
+      "doc_rank": 1,
+      "passage_rank": 3,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-periakaruppan-chettiar-vs-state-of-tamil-nadu-ors-on-15-january-1971-1",
+        "a-periakaruppan-chettiar-vs-state-of-tamil-nadu-ors-on-15-january-1971-1",
+        "a-periakaruppan-chettiar-vs-state-of-tamil-nadu-ors-on-15-january-1971-1",
+        "a-periakaruppan-chettiar-vs-state-of-tamil-nadu-ors-on-15-january-1971-1",
+        "a-periakaruppan-chettiar-vs-state-of-tamil-nadu-ors-on-15-january-1971-1"
+      ]
+    },
+    {
+      "id": "q048",
+      "doc_slug": "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+      "qtype": "paraphrase",
+      "question": "Could the apex court, by its own direction aimed at a speedier disposal, take a former Maharashtra Chief Minister's graft prosecution away from the specially appointed judge whom the statute made the exclusive forum and hand it over for trial to a different tribunal?",
+      "doc_rank": 1,
+      "passage_rank": null,
+      "best_coverage": 0.067,
+      "top_docs": [
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1"
+      ]
+    },
+    {
+      "id": "q049",
+      "doc_slug": "a-selvaraj-vs-c-b-m-college-on-4-march-2022-1",
+      "qtype": "paraphrase",
+      "question": "When a chemistry teacher who superannuated from a government-aided college in Coimbatore received his terminal dues years late while the institution's managers, its former secretary and the state authorities kept passing the blame, who must compensate him for the waiting period in the first instance?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-selvaraj-vs-c-b-m-college-on-4-march-2022-1",
+        "a-selvaraj-vs-c-b-m-college-on-4-march-2022-1",
+        "2ec-to-govt-school-education-vs-thiru-r-govindaswamy-ors-on-21-february-2014-1",
+        "a-p-m-mayakutty-etc-vs-secretary-public-service-department-on-8-february-1977-1",
+        "a-periakaruppan-chettiar-vs-state-of-tamil-nadu-ors-on-15-january-1971-1"
+      ]
+    },
+    {
+      "id": "q050",
+      "doc_slug": "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1",
+      "qtype": "holding",
+      "question": "Did the Supreme Court hold that a nationalised bank officer, discharged from Prevention of Corruption Act charges because sanction under Section 19 was not granted, can still be proceeded against for IPC offences of conspiracy, cheating and forgery, and how is the need for Section 197 CrPC sanction to be determined in such a prosecution?",
+      "doc_rank": 1,
+      "passage_rank": 4,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1",
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1",
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1",
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1",
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1"
+      ]
+    },
+    {
+      "id": "q051",
+      "doc_slug": "a-t-zambre-and-others-vs-kartar-krishna-shashtri-on-17-december-1980-1",
+      "qtype": "facts",
+      "question": "In a case striking down Section 17(5) of the Maharashtra Medical Practitioners Act, 1961 under Article 14, where had the practitioner who was refused registration practised before migrating to Bombay in 1962, and what became of his application to the Committee and his appeal to the Board?",
+      "doc_rank": 1,
+      "passage_rank": 5,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-t-zambre-and-others-vs-kartar-krishna-shashtri-on-17-december-1980-1",
+        "a-t-zambre-and-others-vs-kartar-krishna-shashtri-on-17-december-1980-1",
+        "a-c-narayanan-vs-state-of-maharashtra-anr-on-13-september-2013-1",
+        "a-t-zambre-and-others-vs-kartar-krishna-shashtri-on-17-december-1980-1",
+        "a-t-zambre-and-others-vs-kartar-krishna-shashtri-on-17-december-1980-1"
+      ]
+    },
+    {
+      "id": "q052",
+      "doc_slug": "a-v-fernandez-vs-the-state-of-kerala-on-2-april-1957-1",
+      "qtype": "principle",
+      "question": "Where a coconut-oil manufacturer claimed to deduct the full purchase value of copra, including that attributable to oil sold in inter-State trade excluded by the non-obstante provision of the Travancore-Cochin General Sales Tax Act, what canon governing the construction of fiscal statutes did the Supreme Court articulate?",
+      "doc_rank": 1,
+      "passage_rank": 7,
+      "best_coverage": 0.824,
+      "top_docs": [
+        "a-v-fernandez-vs-the-state-of-kerala-on-2-april-1957-1",
+        "a-v-fernandez-vs-the-state-of-kerala-on-2-april-1957-1",
+        "a-v-fernandez-vs-the-state-of-kerala-on-2-april-1957-1",
+        "a-v-fernandez-vs-the-state-of-kerala-on-2-april-1957-1",
+        "a-v-fernandez-vs-the-state-of-kerala-on-2-april-1957-1"
+      ]
+    },
+    {
+      "id": "q053",
+      "doc_slug": "a-vishwanath-rao-etc-vs-the-state-of-mysore-ors-on-16-february-1968-1",
+      "qtype": "holding",
+      "question": "Under the Motor Vehicles Act, 1939, did the Supreme Court hold that an approved nationalisation scheme for a 28-mile inter-State route fixing a maximum of 18 vehicles against a minimum of one amounted to a fraud on sections 68-C and 68-E?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-vishwanath-rao-etc-vs-the-state-of-mysore-ors-on-16-february-1968-1",
+        "a-vishwanath-rao-etc-vs-the-state-of-mysore-ors-on-16-february-1968-1",
+        "a-vishwanath-rao-etc-vs-the-state-of-mysore-ors-on-16-february-1968-1",
+        "a-vishwanath-rao-etc-vs-the-state-of-mysore-ors-on-16-february-1968-1",
+        "63-moons-technologies-ltd-formerly-vs-union-of-india-on-30-april-2019-1"
+      ]
+    },
+    {
+      "id": "q054",
+      "doc_slug": "abdul-gani-and-ors-vs-state-of-madhya-pradesh-on-3-march-1952-1",
+      "qtype": "principle",
+      "question": "In a riot-and-murder appeal arising from the daylight killing of three malguzars of a Wardha village, what principle governs whether the prosecution is obliged to examine every available witness, such as an unexamined nine-year-old boy and a brother of the deceased?",
+      "doc_rank": 1,
+      "passage_rank": 7,
+      "best_coverage": 0.825,
+      "top_docs": [
+        "abdul-gani-and-ors-vs-state-of-madhya-pradesh-on-3-march-1952-1",
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+        "a-n-venkatesh-and-anr-vs-state-of-karnataka-on-8-august-2005-1",
+        "abdul-latif-and-ors-vs-state-of-uttar-pradesh-on-24-january-1978-1",
+        "abdul-gani-and-ors-vs-state-of-madhya-pradesh-on-3-march-1952-1"
+      ]
+    },
+    {
+      "id": "q055",
+      "doc_slug": "abdul-husein-tayabali-ors-vs-state-of-gujarat-ors-on-20-september-1967-1",
+      "qtype": "holding",
+      "question": "Did the Supreme Court hold that a single general notification authorising all Special Land Acquisition Officers in a State to perform the Collector's functions satisfies the requirement of an officer being 'specially appointed' under section 3(c) of the Land Acquisition Act, 1894 for holding a Rule 4 inquiry under the Land Acquisition (Companies) Rules?",
+      "doc_rank": 1,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "abdul-husein-tayabali-ors-vs-state-of-gujarat-ors-on-20-september-1967-1",
+        "abdul-husein-tayabali-ors-vs-state-of-gujarat-ors-on-20-september-1967-1",
+        "abdul-husein-tayabali-ors-vs-state-of-gujarat-ors-on-20-september-1967-1",
+        "abdul-husein-tayabali-ors-vs-state-of-gujarat-ors-on-20-september-1967-1",
+        "abdul-husein-tayabali-ors-vs-state-of-gujarat-ors-on-20-september-1967-1"
+      ]
+    },
+    {
+      "id": "q056",
+      "doc_slug": "abdul-khader-ors-vs-state-of-mysore-on-30-april-1953-1",
+      "qtype": "holding",
+      "question": "Where a death sentence passed by a Special Judge under the Special Criminal Courts Act, 1942 was confirmed after the Constitution commenced by a single reviewing Judge instead of two High Court Judges as under Section 374 CrPC, how did the Supreme Court deal with the death sentence?",
+      "doc_rank": 2,
+      "passage_rank": 2,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1",
+        "abdul-khader-ors-vs-state-of-mysore-on-30-april-1953-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-r-antulay-vs-r-s-nayak-anr-on-29-april-1988-1",
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1"
+      ]
+    },
+    {
+      "id": "q057",
+      "doc_slug": "abdul-rehman-mahomed-yusuf-vs-mahomed-haji-ahmad-agbotwalaand-on-15-september-19",
+      "qtype": "holding",
+      "question": "Where a Presidency Magistrate framed a defamation charge under Section 500 IPC based on utterances made to an advocate that were never stated in the aggrieved person's complaint, did the Supreme Court hold that a separate complaint under Section 198 of the Code of Criminal Procedure, 1898 was required?",
+      "doc_rank": 3,
+      "passage_rank": 8,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-j-peiris-vs-state-of-madras-on-18-march-1954-1",
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1",
+        "abdul-rehman-mahomed-yusuf-vs-mahomed-haji-ahmad-agbotwalaand-on-15-september-19",
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1",
+        "a-sreenivasa-reddy-vs-rakesh-sharma-on-8-august-2023-1"
+      ]
+    },
+    {
+      "id": "q058",
+      "doc_slug": "achyut-das-vs-state-of-assam-on-29-october-1993-1",
+      "qtype": "holding",
+      "question": "In a case of a night-time truck dacoity where stolen ornaments, cash and wrist watches were recovered from the accused's houses, what did the Supreme Court hold about substituting a conviction under Section 411 IPC for one under Section 412 IPC when knowledge that the property was stolen in a dacoity was unproved?",
+      "doc_rank": 6,
+      "passage_rank": 6,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1",
+        "a-jayaram-anr-etc-etc-vs-state-of-andhra-pradesh-byc-b-i-on-13-july-1995-1",
+        "a-deivendran-vs-state-of-t-n-on-21-october-1997-1"
+      ]
+    },
+    {
+      "id": "q059",
+      "doc_slug": "amalendu-pal-jhantu-vs-state-of-west-bengal-on-11-november-2009-1",
+      "qtype": "holding",
+      "question": "Where a husband brought his paramour to live in the matrimonial home as his second wife three months before his first wife hanged herself, did the Supreme Court uphold his conviction for abetment of suicide under Section 306 IPC?",
+      "doc_rank": 1,
+      "passage_rank": 5,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "amalendu-pal-jhantu-vs-state-of-west-bengal-on-11-november-2009-1",
+        "amalendu-pal-jhantu-vs-state-of-west-bengal-on-11-november-2009-1",
+        "amalendu-pal-jhantu-vs-state-of-west-bengal-on-11-november-2009-1",
+        "amalendu-pal-jhantu-vs-state-of-west-bengal-on-11-november-2009-1",
+        "amalendu-pal-jhantu-vs-state-of-west-bengal-on-11-november-2009-1"
+      ]
+    },
+    {
+      "id": "q060",
+      "doc_slug": "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1",
+      "qtype": "holding",
+      "question": "In the Common Cause litigation over the Central Civil Services (Commutation of Pension) Rules, 1981, did the Supreme Court hold that Armed Forces pensioners must be subject to a longer period than civilian pensioners before the commuted portion of their pension is restored?",
+      "doc_rank": 1,
+      "passage_rank": 3,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1",
+        "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1",
+        "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1",
+        "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1",
+        "common-cause-a-registered-society-and-vs-union-of-india-on-9-december-1986-1"
+      ]
+    },
+    {
+      "id": "q061",
+      "doc_slug": "ex-capt-randhir-singh-dhull-vs-s-d-bhambri-others-on-2-march-1981-1",
+      "qtype": "holding",
+      "question": "Under Rule 11 of the Punjab Tahsildari Rules, 1932, did the Supreme Court treat a Financial Commissioner's letter accepting an ex-army officer as an 'A' Class Tahsildar candidate as an appointment to the post of Tahsildar for reckoning seniority?",
+      "doc_rank": 1,
+      "passage_rank": 3,
+      "best_coverage": 1.0,
+      "top_docs": [
+        "ex-capt-randhir-singh-dhull-vs-s-d-bhambri-others-on-2-march-1981-1",
+        "ex-capt-randhir-singh-dhull-vs-s-d-bhambri-others-on-2-march-1981-1",
+        "ex-capt-randhir-singh-dhull-vs-s-d-bhambri-others-on-2-march-1981-1",
+        "ex-capt-randhir-singh-dhull-vs-s-d-bhambri-others-on-2-march-1981-1",
+        "ex-capt-randhir-singh-dhull-vs-s-d-bhambri-others-on-2-march-1981-1"
+      ]
+    },
+    {
+      "id": "q062",
+      "doc_slug": "mrs-roshan-sam-vs-b-r-cotton-mills-ltd-and-ors-on-6-april-1990-1",
+      "qtype": "principle",
+      "question": "Where a tenant company obtained time to vacate on an undertaking not to part with possession while its chairman was set up to claim sub-tenancy and stall execution, what principle did the Supreme Court apply concerning breach of an undertaking given to a court and its power under Article 142(1) of the Constitution?",
+      "doc_rank": 1,
+      "passage_rank": null,
+      "best_coverage": 0.075,
+      "top_docs": [
+        "mrs-roshan-sam-vs-b-r-cotton-mills-ltd-and-ors-on-6-april-1990-1",
+        "mrs-roshan-sam-vs-b-r-cotton-mills-ltd-and-ors-on-6-april-1990-1",
+        "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1",
+        "mrs-roshan-sam-vs-b-r-cotton-mills-ltd-and-ors-on-6-april-1990-1",
+        "a-b-bhaskara-rao-vs-inspector-of-police-cbi-vishakpatnam-on-23-september-2011-1"
+      ]
+    }
+  ]
+}
