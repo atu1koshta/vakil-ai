@@ -23,6 +23,7 @@ Tag names the run (e.g. "baseline-700-80"); defaults to the profile name.
 import argparse
 import json
 import re
+import time
 from pathlib import Path
 
 from ..config import get_profile
@@ -79,7 +80,9 @@ def main() -> None:
     for q in questions:
         # The SAME path /search and /ask use — eval numbers must describe the
         # code production runs, not a parallel reimplementation.
+        t0 = time.perf_counter()
         hits = retrieve(q["question"], k=MAX_K, profile=profile)
+        elapsed_ms = round((time.perf_counter() - t0) * 1000, 1)
         gold = shingles(normalize_words(q["gold_passage"]))
 
         doc_rank = next(
@@ -99,6 +102,9 @@ def main() -> None:
                 "passage_rank": passage_rank,
                 "best_coverage": round(max(covers, default=0.0), 3),
                 "top_docs": [h["doc_id"] for h in hits[:5]],
+                # Rerank and LLM rewrite trade latency for precision — the
+                # price gets recorded next to the gains, per question.
+                "elapsed_ms": elapsed_ms,
             }
         )
 
@@ -119,6 +125,7 @@ def main() -> None:
     summary["mrr"] = round(
         sum(1 / d["doc_rank"] for d in details if d["doc_rank"]) / n, 3
     )
+    summary["mean_latency_ms"] = round(sum(d["elapsed_ms"] for d in details) / n, 1)
 
     by_type: dict = {}
     for qtype in sorted({d["qtype"] for d in details}):
