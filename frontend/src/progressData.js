@@ -181,6 +181,11 @@ export const PHASES = [
           diagnosis: 'Bi-encoders compress query and document separately — word-level interaction is lost at 768 dims. Recall stage needs a precision stage.',
           cure: 'Cross-encoder reranks top-50 → top-8 (retrieve wide, rank narrow); LLM rewrites the question into retrieval-friendly form.',
         },
+        doc: {
+          label: 'Rerank + rewrite knowledge base — query ensembles, bi- vs cross-encoders, two-stage retrieval',
+          // symlinked into frontend/public/docs/ so Vite serves the repo's docs/ copy
+          href: '/docs/rerank-rewrite.md',
+        },
         components: [
           { name: 'cross-encoder reranker', status: 'deferred' },
           { name: 'query rewriting', status: 'deferred' },
