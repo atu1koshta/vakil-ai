@@ -62,9 +62,10 @@ export async function searchChunks(q, k = 5, profile = null) {
   return handle(await fetch(`${BASE_URL}/search?${params}`));
 }
 
-export async function agentAsk(q, { model = null, maxSteps = 6 } = {}) {
+export async function agentAsk(q, { model = null, maxSteps = 6, sessionId = null } = {}) {
   const params = new URLSearchParams({ q, max_steps: String(maxSteps) });
   if (model) params.set('model', model);
+  if (sessionId) params.set('session_id', sessionId);
   return handle(await fetch(`${BASE_URL}/agent/ask?${params}`));
 }
 

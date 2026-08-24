@@ -33,6 +33,9 @@ class AgentResult:
     steps: list[AgentStep] = field(default_factory=list)
     iterations: int = 0  # LLM calls made
     exhausted: bool = False  # True = answer was forced after max_steps
+    # What the NEXT turn should see: prior history + this turn's user
+    # question + final answer. Tool messages are dropped — see sessions.py.
+    history: list[dict] = field(default_factory=list)
 
 
 class Agent(ABC):
@@ -44,6 +47,9 @@ class Agent(ABC):
         model: str | None = None,
         profile: str | None = None,
         max_steps: int = 6,
+        history: list[dict] | None = None,
     ) -> AgentResult:
         """Answer one question, deciding tool use internally. model/profile
-        resolve like everywhere else (explicit > env > config active)."""
+        resolve like everywhere else (explicit > env > config active).
+        history = prior chat turns ({"role", "content"} dicts) prepended
+        before the question; the result's .history is what to store back."""

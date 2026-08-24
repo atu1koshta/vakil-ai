@@ -70,12 +70,18 @@ class HandRolledAgent(Agent):
         model: str | None = None,
         profile: str | None = None,
         max_steps: int = 6,
+        history: list[dict] | None = None,
     ) -> AgentResult:
         max_steps = max(1, min(max_steps, MAX_STEPS_CAP))
         cfg = get_chat_config(model)
         chat = get_chat_model(model)
+        # Prior turns sit between system and the new question, so the model
+        # can resolve references like "the earlier case" — the whole point
+        # of chat. They contain only user/assistant text (sessions.py).
+        prior = list(history or [])
         messages: list[dict] = [
             {"role": "system", "content": AGENT_SYSTEM_PROMPT},
+            *prior,
             {"role": "user", "content": question},
         ]
         steps: list[AgentStep] = []
@@ -108,6 +114,7 @@ class HandRolledAgent(Agent):
                     model=cfg.name,
                     steps=steps,
                     iterations=iterations,
+                    history=self._next_history(prior, question, result.content),
                 )
             messages.append(
                 {
@@ -152,7 +159,17 @@ class HandRolledAgent(Agent):
             steps=steps,
             iterations=iterations,
             exhausted=True,
+            history=self._next_history(prior, question, final.content),
         )
+
+    @staticmethod
+    def _next_history(prior: list[dict], question: str, answer: str) -> list[dict]:
+        """History to persist: prior turns + this one, tool noise dropped."""
+        return [
+            *prior,
+            {"role": "user", "content": question},
+            {"role": "assistant", "content": answer},
+        ]
 
     @staticmethod
     def _execute(
