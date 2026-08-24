@@ -394,25 +394,32 @@ export const PHASES = [
       {
         id: "s3a-loop",
         title: "3a — Hand-rolled tool loop",
-        status: "pending",
-        note: "Agent = LLM + tools + loop + state, built raw (~150 lines) before any framework, so the abstraction is understood from below.",
+        status: "done",
+        when: "2026-08-24",
+        note: "Agent = LLM + tools + loop + state, built raw (~150 lines) before any framework, so the abstraction is understood from below. ChatModel grew chat_tools() (messages list + tool schemas, neutral OpenAI-style format; Ollama wants dict arguments, OpenAI-compat JSON strings — adapters translate). Exposed as GET /agent/ask + an Agent studio tab showing the tool trace.",
+        lesson:
+          "Planning met the data twice: vakil.db has no court/year columns (they live only in metadata.json, noisy — so filter_documents matches substrings over 76 json files), and chunk section names are classify_section() outputs, not literal headings (so read_document re-splits markdown with the chunker's own functions). llama3.1 answers from tools fine but drops citations from final answers — exactly what 2d's faithfulness judge would catch.",
         components: [
           {
             name: "search_chunks tool",
-            status: "pending",
-            note: "wraps retrieve()",
+            status: "done",
+            note: "wraps retrieve(); capped output, [doc_id:chunk_id | SECTION] headers",
           },
           {
             name: "filter_documents tool",
-            status: "pending",
-            note: "court / year over vakil.db metadata",
+            status: "done",
+            note: "substring court/title + year regex over output/*/metadata.json",
           },
           {
             name: "read_document tool",
-            status: "pending",
-            note: "full section when a chunk is not enough",
+            status: "done",
+            note: "list sections, then fetch one — reuses split_sections()",
           },
-          { name: "tool-call dispatch loop", status: "pending" },
+          {
+            name: "tool-call dispatch loop",
+            status: "done",
+            note: "max_steps + repeat-call cache + forced final answer",
+          },
         ],
       },
       {

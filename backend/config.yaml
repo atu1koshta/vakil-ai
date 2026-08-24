@@ -23,7 +23,7 @@ active_profile: nomic-default
 # retrieved text, so switching never invalidates any vector index.
 # Switch: flip `active`, or per shell VAKIL_CHAT_MODEL=<name>.
 generation:
-  active: deepseek
+  active: deepseek-api
   models:
     llama:
       provider: ollama # ChatModel implementation (llm/)

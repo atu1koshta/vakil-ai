@@ -6,13 +6,14 @@ import MarkdownPanel from './components/MarkdownPanel.jsx';
 import MetadataCard from './components/MetadataCard.jsx';
 import ChunkViewer from './components/ChunkViewer.jsx';
 import SearchPanel from './components/SearchPanel.jsx';
+import AgentPanel from './components/AgentPanel.jsx';
 import DashboardPanel from './components/DashboardPanel.jsx';
 import ProgressPage from './components/ProgressPage.jsx';
 import IndexStatusBadge from './components/IndexStatusBadge.jsx';
 import ProfileBadge from './components/ProfileBadge.jsx';
 import { documentPdfUrl, listProfiles } from './api.js';
 
-const TABS = ['Dashboard', 'Search', 'Markdown', 'Metadata', 'Chunks'];
+const TABS = ['Dashboard', 'Search', 'Agent', 'Markdown', 'Metadata', 'Chunks'];
 
 export default function App() {
   // Poor-man's routing: /progress renders the learning journal, everything
@@ -129,6 +130,9 @@ function Studio() {
                 <DashboardPanel />
               ) : tab === 'Search' ? (
                 <SearchPanel profileInfo={profileInfo} />
+              ) : tab === 'Agent' ? (
+                // agentic QA over the whole corpus — works without a loaded document
+                <AgentPanel />
               ) : !result ? (
                 <div className="flex h-full items-center justify-center text-sm text-slate-400">
                   Upload a judgment PDF or pick one from Drive.
