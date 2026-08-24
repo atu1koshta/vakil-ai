@@ -8,7 +8,7 @@ only — it never learns which model answered.
 """
 
 from ..config import ConfigError, get_chat_config
-from .base import ChatModel, GenerationError
+from .base import ChatModel, GenerationError, ToolCall, ToolChatResult
 from .ollama import OllamaChat
 from .openai_compat import OpenAICompatChat
 
@@ -35,5 +35,7 @@ __all__ = [
     "GenerationError",
     "OllamaChat",
     "OpenAICompatChat",
+    "ToolCall",
+    "ToolChatResult",
     "get_chat_model",
 ]
