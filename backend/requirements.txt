@@ -10,3 +10,4 @@ numpy>=1.26
 google-api-python-client>=2.130
 google-auth>=2.30
 google-auth-oauthlib>=1.2
+sentence-transformers>=3.0 # cross-encoder reranker; torch/transformers already present via docling

@@ -46,6 +46,14 @@ class VectorIndex(ABC):
             "needs a store that implements lexical_search"
         )
 
+    def lexical_phrase_search(self, phrases: list[str], k: int = 5) -> list[dict]:
+        """Exact-phrase lexical search: match only where a phrase's tokens
+        appear consecutively, in order (citation queries). Optional, same as
+        lexical_search — stores without positional indexes don't claim it."""
+        raise NotImplementedError(
+            f"{type(self).__name__} has no phrase-capable lexical index"
+        )
+
     def rebuild_lexical_index(self) -> None:  # no-op where unsupported
         pass
 

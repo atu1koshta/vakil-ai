@@ -51,6 +51,7 @@ Each pipeline component is a package with a fixed layout: `base.py` = interface 
 | `app/chunker/` | `Chunker` | `get_chunker(cfg)` | `chunking.strategy` (per profile) | profile |
 | `app/embeddings/` | `Embedder` | `get_embedder(profile)` | `embedding.provider` (per profile) | profile |
 | `app/vector_store/` | `VectorIndex` | `open_store(profile)` | `store` (per profile) | profile |
+| `app/rerank/` | `Reranker` | `get_reranker(profile)` | `retrieval.rerank.provider` (per profile) | profile |
 
 Pipeline-level components' output (`output/`) is shared by all profiles — changing them means bumping `PIPELINE_VERSION`. Profile-level components feed the per-profile index — their identity is in the profile fingerprint.
 

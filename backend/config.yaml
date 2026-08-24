@@ -94,6 +94,34 @@ profiles:
       # = 0.833 with conceptual types all at 1.0.
       candidates: 20 # depth per ranker before fusion
       rrf_k: 10 # sharper than the Cormack 60 default — see note above
+      rewrite:
+        # Regex citation detector -> FTS5 phrase list joins RRF (q017 cure:
+        # phrases express the token ADJACENCY that OR queries throw away).
+        # 2c winner (evals/results/2c-citations.json): citation passage@5
+        # .833 -> 1.0, passage@1 .226 -> .419, mrr .835 -> .962; only the 12
+        # citation questions moved — the phrase list is inert elsewhere.
+        citations: true
+        # LLM keyword rewrite (q004 cure) — MEASURED NET-NEGATIVE here, off:
+        # paraphrase@5 .286 -> .429 but holding 1.0 -> .85, passage@5 .871 ->
+        # .855, +7.4s/query (2c-rewrite.json). The extra lists out-fuse gold
+        # chunks at top-5 — the 2b false-consensus tax, re-paid.
+        llm: false
+        model: llama # llama3.1 — deepseek's thinking tokens too slow per-query
+      # Cross-encoder precision stage — MEASURED NET-NEGATIVE here, off:
+      # best variant (BAAI/bge-reranker-base, 2c-rerank-bge.json) passage@5
+      # .774 vs .871 without; MiniLM-L-6 far worse (.645). Wide c50/pool50
+      # was worse still (.758) — the "2b knobs compensated for a missing
+      # precision stage" thesis FALSIFIED at this corpus/model scale: the
+      # judge misjudges long legal chunks (topical-relevance over exact
+      # evidence, 512-token truncation), so it overrides the phrase list's
+      # decisive rankings. Knob stays: a stronger/longer reranker is a yaml
+      # edit away.
+      rerank:
+        enabled: false
+        provider: cross-encoder
+        model: BAAI/bge-reranker-base # best of 3 tried; MiniLM L-6/L-12 weaker
+        pool: 30
+        batch_size: 16
 
   # Same model, smaller chunks — isolates the chunking variable.
   nomic-small-chunks:

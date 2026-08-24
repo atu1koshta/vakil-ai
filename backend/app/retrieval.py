@@ -20,10 +20,23 @@ Learning notes:
 - Each ranker contributes `candidates` deep (retrieve wide), fusion cuts to
   k (return narrow): a doc absent from dense's top-k can still surface via
   its lexical rank — the whole point of 2b.
+- Query rewriting ADDS ranked lists to the fusion, never replaces the raw
+  question's lists. A citation phrase list is inert (empty, RRF unaffected)
+  or decisive (exact match, surfaces at rank 1 of its list) — no middle
+  mode where it injects plausible junk.
+- `score` now lives on a THIRD scale: cosine (dense), RRF sum (hybrid), or
+  cross-encoder logit (reranked — raw, unbounded, possibly negative).
+  Comparable only within one result list, never across strategies.
+- The reranker is WHY `candidates` can re-widen without paying 2b's
+  false-consensus tax: junk that out-fuses gold at RRF rank gets re-scored
+  by a judge that actually reads the pairs — false consensus was only
+  dangerous when RRF rank was the final word.
 """
 
 from .config import Profile, get_profile
 from .embeddings import get_embedder
+from .rerank import get_reranker
+from .rewrite import detect_citations, llm_rewrite
 from .vector_store import open_store
 
 
@@ -52,10 +65,39 @@ def retrieve(
     """
     prof = profile if isinstance(profile, Profile) else get_profile(profile)
     cfg = prof.retrieval
-    vector = get_embedder(prof).embed_query(question)
+    embedder = get_embedder(prof)
     with open_store(prof) as store:
         if cfg.strategy == "dense":
-            return store.search(vector, k=k)
-        dense = store.search(vector, k=cfg.candidates)
-        lexical = store.lexical_search(question, k=cfg.candidates)
-        return _rrf([dense, lexical], cfg.rrf_k)[:k]
+            # With rerank on, fetch a POOL, not k: reranking k rows would
+            # only reorder them, never recover anything below the cut.
+            depth = max(k, cfg.rerank.pool) if cfg.rerank.enabled else k
+            pool = store.search(embedder.embed_query(question), k=depth)
+        else:
+            # Query ensemble: the raw question ALWAYS contributes
+            # dense+lexical; a successful LLM rewrite adds one more pair of
+            # lists. A bad rewrite can only inject extra candidates, never
+            # displace the raw lists — failure is bounded by construction.
+            queries = [question]
+            if cfg.rewrite.llm:
+                rewritten = llm_rewrite(question, cfg.rewrite.model or None)
+                if rewritten:
+                    queries.append(rewritten)
+            rankings = []
+            for q in queries:
+                rankings.append(
+                    store.search(embedder.embed_query(q), k=cfg.candidates)
+                )
+                rankings.append(store.lexical_search(q, k=cfg.candidates))
+            if cfg.rewrite.citations:
+                phrases = detect_citations(question)
+                if phrases:
+                    rankings.append(
+                        store.lexical_phrase_search(phrases, k=cfg.candidates)
+                    )
+            pool = _rrf(rankings, cfg.rrf_k)
+    if not cfg.rerank.enabled:
+        return pool[:k]
+    # Precision stage: the cross-encoder reads each (RAW question, chunk)
+    # pair — the user's own words are the ground truth of intent, never the
+    # rewrite — and keeps the best k of the pool.
+    return get_reranker(prof).rerank(question, pool[: cfg.rerank.pool], k)

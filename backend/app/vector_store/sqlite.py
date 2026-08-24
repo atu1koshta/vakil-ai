@@ -182,15 +182,9 @@ class SqliteVectorStore(VectorIndex):
         )
         self.conn.commit()
 
-    def lexical_search(self, query: str, k: int = 5) -> list[dict]:
-        """BM25 top-k over case_title + section + text. Returns the same row
-        shape as search(); `score` = negated FTS5 bm25() (higher = better,
-        matching the dense convention — but the SCALES are unrelated, which
-        is exactly why hybrid fuses by RANK, not score)."""
-        tokens = re.findall(r"[A-Za-z0-9]+", query)
-        if not tokens:
-            return []
-        match = " OR ".join(f'"{t}"' for t in tokens)  # quoted: never operators
+    def _fts_query(self, match: str, k: int) -> list[dict]:
+        """Run one FTS5 MATCH: staleness check, BM25 rank, row mapping.
+        Shared by token (OR) and phrase queries."""
         stamp = self.conn.execute(
             "SELECT meta_value FROM index_meta WHERE meta_key = 'fts_chunks'"
         ).fetchone()
@@ -216,6 +210,33 @@ class SqliteVectorStore(VectorIndex):
             }
             for r in rows
         ]
+
+    def lexical_search(self, query: str, k: int = 5) -> list[dict]:
+        """BM25 top-k over case_title + section + text. Returns the same row
+        shape as search(); `score` = negated FTS5 bm25() (higher = better,
+        matching the dense convention — but the SCALES are unrelated, which
+        is exactly why hybrid fuses by RANK, not score)."""
+        tokens = re.findall(r"[A-Za-z0-9]+", query)
+        if not tokens:
+            return []
+        match = " OR ".join(f'"{t}"' for t in tokens)  # quoted: never operators
+        return self._fts_query(match, k)
+
+    def lexical_phrase_search(self, phrases: list[str], k: int = 5) -> list[dict]:
+        """Exact-phrase BM25: `"1995 2 SCC 7"` matches only where those
+        tokens are consecutive and in order — the adjacency a citation's
+        identity lives in, which OR queries throw away. Each phrase is
+        re-sanitized through the same [A-Za-z0-9]+ split as lexical_search:
+        quoted FTS5 content can never parse as an operator, so no
+        user-supplied text can inject query syntax."""
+        quoted = []
+        for phrase in phrases:
+            tokens = re.findall(r"[A-Za-z0-9]+", phrase)
+            if tokens:
+                quoted.append('"' + " ".join(tokens) + '"')
+        if not quoted:
+            return []
+        return self._fts_query(" OR ".join(quoted), k)
 
     def count_chunks(self) -> int:
         return self.conn.execute("SELECT COUNT(*) FROM chunk_vectors").fetchone()[0]

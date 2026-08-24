@@ -104,6 +104,39 @@ class IndexingConfig(BaseModel):
     enrich: bool = True
 
 
+class RerankConfig(BaseModel):
+    """Cross-encoder precision stage over the fused candidate pool.
+    Orthogonal to strategy (a flag, not a Literal value): a precision stage
+    doesn't care whether the pool came from dense or hybrid retrieval."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool = False
+    # Registry name of a Reranker implementation (rerank._RERANKERS).
+    provider: str = "cross-encoder"
+    model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    # Fused candidates fed to the cross-encoder (the "shortlist" size).
+    pool: int = Field(50, ge=1)
+    batch_size: int = Field(16, ge=1)
+
+
+class RewriteConfig(BaseModel):
+    """Query rewriting knobs (hybrid-only — rewrites exist to feed lexical
+    lists). Separate booleans deliberately: the eval matrix turns each cure
+    on independently to attribute improvements to the right mechanism.
+    Defaults OFF so profiles that never mention these keys retrieve
+    identically to before 2c."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    # Regex citation detector -> FTS5 phrase queries (the q017 cure).
+    citations: bool = False
+    # LLM keyword rewrite via app/llm (the q004 cure).
+    llm: bool = False
+    # generation.models key for the rewrite; "" = active/env chain.
+    model: str = ""
+
+
 class RetrievalConfig(BaseModel):
     """Query-time retrieval strategy. Deliberately OUTSIDE fingerprint():
     the lexical (FTS5) index is derived from payloads the store already
@@ -119,6 +152,8 @@ class RetrievalConfig(BaseModel):
     # RRF constant: flattens the top of 1/(k+rank) so single-list rank noise
     # can't dominate; 60 is the empirical default from Cormack et al. 2009.
     rrf_k: int = Field(60, ge=0)
+    rewrite: RewriteConfig = Field(default_factory=RewriteConfig)
+    rerank: RerankConfig = Field(default_factory=RerankConfig)
 
 
 class Profile(BaseModel):

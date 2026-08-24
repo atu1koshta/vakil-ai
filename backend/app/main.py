@@ -59,7 +59,9 @@ def search(q: str, k: int = 5, profile: str | None = None) -> list[dict]:
     except (EmbeddingError, IndexConfigMismatch) as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     for r in rows:
-        r["score"] = round(r["score"], 4)  # cosine similarity, higher = closer
+        # Relevance score, higher = better; SCALE is strategy-dependent
+        # (cosine | RRF sum | cross-encoder logit) — see retrieval.py notes.
+        r["score"] = round(r["score"], 4)
     return rows
 
 
