@@ -425,7 +425,7 @@ export const PHASES = [
       {
         id: "s3b-langgraph",
         title: "3b — LangGraph port + retrieval grading",
-        status: "in-progress",
+        status: "done",
         note: "Same loop as a graph: nodes, edges, checkpointed state. Adds grade-retrieval → rewrite-and-retry (corrective RAG).",
         components: [
           {
@@ -433,7 +433,11 @@ export const PHASES = [
             status: "done",
             note: "StateGraph + ToolNode + tools_condition; @tool annotations derive the schemas tools.py writes by hand; MemorySaver thread_id = session_id replaces sessions.py; agent.kind in config.yaml / ?agent= switches loops",
           },
-          { name: "retrieval sufficiency grading", status: "pending" },
+          {
+            name: "retrieval sufficiency grading",
+            status: "done",
+            note: "grade node after each search_chunks round: structured verdict (sufficient / what's missing / ONE rewritten query) via function-calling; insufficient appends grader guidance and loops to agent, capped at 2 rewrites/turn — the gated version of 2c's net-negative blind rewrite. Grader fails open; verdicts land in the tool trace",
+          },
         ],
       },
       {
