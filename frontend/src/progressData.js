@@ -462,6 +462,11 @@ export const STATUS_META = {
     dot: "bg-sky-500",
     chip: "bg-sky-50 text-sky-700 border-sky-200",
   },
+  "in-progress": {
+    label: "in progress",
+    dot: "bg-violet-500",
+    chip: "bg-violet-50 text-violet-700 border-violet-200",
+  },
   pending: {
     label: "pending",
     dot: "bg-slate-300",
