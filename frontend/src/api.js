@@ -73,6 +73,10 @@ export async function listProfiles() {
   return handle(await fetch(`${BASE_URL}/profiles`));
 }
 
+export async function documentCitations(docId) {
+  return handle(await fetch(`${BASE_URL}/documents/${docId}/citations`));
+}
+
 export async function indexStatus(docId) {
   return handle(await fetch(`${BASE_URL}/documents/${docId}/index-status`));
 }

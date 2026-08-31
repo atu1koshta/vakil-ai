@@ -454,7 +454,7 @@ export const PHASES = [
           {
             name: "edge table in vakil.db",
             status: "done",
-            note: "citation_edges (citing_doc_id, cited_ref, occurrences) + doc_citation_keys (ref → doc reverse lookup); delete+insert per doc = idempotent re-extraction; GET /documents/{id}/citations exposes own/cited/cited_by",
+            note: "citation_edges (citing_doc_id, cited_ref, occurrences) + doc_citation_keys (ref → doc reverse lookup); delete+insert per doc = idempotent re-extraction; GET /documents/{id}/citations exposes own/cited/cited_by, rendered by the studio Citations tab as a past ← doc ← future SVG graph with click-to-walk on in-corpus nodes",
           },
           {
             name: "traversal tools",

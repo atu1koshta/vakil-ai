@@ -7,13 +7,14 @@ import MetadataCard from './components/MetadataCard.jsx';
 import ChunkViewer from './components/ChunkViewer.jsx';
 import SearchPanel from './components/SearchPanel.jsx';
 import AgentPanel from './components/AgentPanel.jsx';
+import CitationGraphPanel from './components/CitationGraphPanel.jsx';
 import DashboardPanel from './components/DashboardPanel.jsx';
 import ProgressPage from './components/ProgressPage.jsx';
 import IndexStatusBadge from './components/IndexStatusBadge.jsx';
 import ProfileBadge from './components/ProfileBadge.jsx';
 import { documentPdfUrl, listProfiles } from './api.js';
 
-const TABS = ['Dashboard', 'Search', 'Agent', 'Markdown', 'Metadata', 'Chunks'];
+const TABS = ['Dashboard', 'Search', 'Agent', 'Citations', 'Markdown', 'Metadata', 'Chunks'];
 
 export default function App() {
   // Poor-man's routing: /progress renders the learning journal, everything
@@ -133,6 +134,10 @@ function Studio() {
               ) : tab === 'Agent' ? (
                 // agentic QA over the whole corpus — works without a loaded document
                 <AgentPanel />
+              ) : tab === 'Citations' ? (
+                // citation graph — has its own doc selector, preseeded with
+                // the loaded document when there is one
+                <CitationGraphPanel key={result?.doc_id} initialDocId={result?.doc_id} />
               ) : !result ? (
                 <div className="flex h-full items-center justify-center text-sm text-slate-400">
                   Upload a judgment PDF or pick one from Drive.
