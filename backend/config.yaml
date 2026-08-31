@@ -19,6 +19,13 @@
 
 active_profile: nomic-default
 
+# Agent loop answering /agent/ask — same toolset, different orchestration.
+# hand-rolled = the raw 3a loop; langgraph = the 3b graph port (checkpointed
+# chat state, room for corrective-RAG nodes). Switch: flip kind, per shell
+# VAKIL_AGENT=<kind>, or per request ?agent=<kind>.
+agent:
+  kind: langgraph
+
 # Generation (chat) models — top-level, NOT a profile knob: they only read
 # retrieved text, so switching never invalidates any vector index.
 # Switch: flip `active`, or per shell VAKIL_CHAT_MODEL=<name>.

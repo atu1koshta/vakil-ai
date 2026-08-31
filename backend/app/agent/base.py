@@ -48,8 +48,13 @@ class Agent(ABC):
         profile: str | None = None,
         max_steps: int = 6,
         history: list[dict] | None = None,
+        session_id: str | None = None,
     ) -> AgentResult:
         """Answer one question, deciding tool use internally. model/profile
         resolve like everywhere else (explicit > env > config active).
-        history = prior chat turns ({"role", "content"} dicts) prepended
-        before the question; the result's .history is what to store back."""
+
+        Chat state, two styles: the hand-rolled loop takes `history` (prior
+        {"role", "content"} turns) and returns .history to store back; the
+        LangGraph loop takes `session_id` (its checkpointer thread_id) and
+        returns .history == [] — memory stays inside the framework. Each
+        implementation ignores the other's argument."""

@@ -235,6 +235,16 @@ class GenerationSection(BaseModel):
         return self
 
 
+class AgentSection(BaseModel):
+    """Which agent loop answers /agent/ask — top-level like generation: the
+    loop only orchestrates tools, it never produces vectors, so switching
+    can't invalidate an index. Registry names in agent/__init__.py."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str = "langgraph"  # hand-rolled | langgraph
+
+
 class ComponentsConfig(BaseModel):
     """Pipeline-LEVEL component selection — parser/metadata output in output/
     is shared by every profile, so these are global, not per-profile.
@@ -250,6 +260,7 @@ class AppConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     active_profile: str
+    agent: AgentSection = Field(default_factory=AgentSection)
     components: ComponentsConfig = Field(default_factory=ComponentsConfig)
     generation: GenerationSection = Field(
         default_factory=lambda: GenerationSection(
@@ -299,6 +310,11 @@ def get_chat_config(name: str | None = None) -> GenerationConfig:
             f"unknown chat model '{resolved}'; available: {sorted(gen.models)}"
         )
     return gen.models[resolved]
+
+
+def get_agent_kind(name: str | None = None) -> str:
+    """Resolve the agent loop: explicit name > VAKIL_AGENT env > config."""
+    return name or os.environ.get("VAKIL_AGENT") or get_config().agent.kind
 
 
 def get_profile(name: str | None = None) -> Profile:

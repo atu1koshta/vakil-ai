@@ -11,3 +11,7 @@ google-api-python-client>=2.130
 google-auth>=2.30
 google-auth-oauthlib>=1.2
 sentence-transformers>=3.0 # cross-encoder reranker; torch/transformers already present via docling
+langgraph>=0.2 # step 3b agent: graph loop + checkpointer
+langchain-core>=0.3 # @tool annotations + message types
+langchain-ollama>=0.2 # ChatOllama with native tool calling
+langchain-openai>=0.2 # ChatOpenAI for openai-compatible APIs (deepseek)

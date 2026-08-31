@@ -1,24 +1,46 @@
 """Agent component package.
 
 base.py = interface + trace dataclasses, hand_rolled.py = the raw loop,
-tools.py = the shared toolset, __init__.py = registry + factory. Step 3b
-adds a "langgraph" entry implementing the same Agent ABC — callers keep
-importing get_agent() only.
+langgraph_agent.py = the 3b graph port, tools.py = the shared toolset
+(lg_tools.py = the same tools as LangChain annotations), sessions.py =
+chat history for the raw loop, __init__.py = registry + factory — callers
+import get_agent() only.
+
+Registry values are LOADERS, not classes: importing langgraph_agent pulls
+langgraph+langchain, which the hand-rolled path must never pay for. The
+selected kind resolves like every other switch: explicit > VAKIL_AGENT env
+> config.yaml agent.kind.
 """
 
-from ..config import ConfigError
-from .base import Agent, AgentError, AgentResult, AgentStep
-from .hand_rolled import HandRolledAgent
+from typing import Callable
 
-_AGENTS: dict[str, type[Agent]] = {
-    "hand-rolled": HandRolledAgent,
+from ..config import ConfigError, get_agent_kind
+from .base import Agent, AgentError, AgentResult, AgentStep
+
+
+def _load_hand_rolled() -> type[Agent]:
+    from .hand_rolled import HandRolledAgent
+
+    return HandRolledAgent
+
+
+def _load_langgraph() -> type[Agent]:
+    from .langgraph_agent import LangGraphAgent
+
+    return LangGraphAgent
+
+
+_AGENTS: dict[str, Callable[[], type[Agent]]] = {
+    "hand-rolled": _load_hand_rolled,
+    "langgraph": _load_langgraph,
 }
 
 
-def get_agent(kind: str = "hand-rolled") -> Agent:
-    if kind not in _AGENTS:
-        raise ConfigError(f"unknown agent '{kind}'; available: {sorted(_AGENTS)}")
-    return _AGENTS[kind]()
+def get_agent(kind: str | None = None) -> Agent:
+    resolved = get_agent_kind(kind)
+    if resolved not in _AGENTS:
+        raise ConfigError(f"unknown agent '{resolved}'; available: {sorted(_AGENTS)}")
+    return _AGENTS[resolved]()()
 
 
 __all__ = [
@@ -26,6 +48,5 @@ __all__ = [
     "AgentError",
     "AgentResult",
     "AgentStep",
-    "HandRolledAgent",
     "get_agent",
 ]

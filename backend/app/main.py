@@ -109,15 +109,18 @@ def agent_ask(
     profile: str | None = None,
     max_steps: int = 6,
     session_id: str | None = None,
+    agent: str | None = None,
 ) -> dict:
-    """Agentic QA: the model decides what to retrieve via tools (step 3a).
-    Synchronous — a local llama3.1 run can take a minute+. The active
-    deepseek-r1 model has no tool support: expect an actionable 502 unless
-    model=llama or model=deepseek-api.
+    """Agentic QA: the model decides what to retrieve via tools. `agent`
+    picks the loop (hand-rolled | langgraph; default config.yaml
+    agent.kind). Synchronous — a local llama3.1 run can take a minute+.
+    The deepseek-r1 model has no tool support: expect an actionable 502
+    unless model=llama or model=deepseek-api.
 
     Chat: pass the session_id from a previous response to continue that
     conversation; omit it to start a new one (a fresh id comes back either
-    way). Sessions are in-memory — a server restart forgets them."""
+    way). Both loops keep sessions in memory — a restart forgets them, and
+    ids don't transfer between loops."""
     from .agent import AgentError, get_agent, sessions
     from .config import ConfigError
     from .embeddings import EmbeddingError
@@ -126,12 +129,13 @@ def agent_ask(
 
     sid = session_id or sessions.new_session_id()
     try:
-        result = get_agent().run(
+        result = get_agent(agent).run(
             q,
             model=model,
             profile=profile,
             max_steps=max_steps,
             history=sessions.get_history(sid),
+            session_id=sid,
         )
     except ConfigError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -140,7 +144,9 @@ def agent_ask(
     except (GenerationError, AgentError) as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     # Persist only on success: a failed turn leaves the session as it was.
-    sessions.save_history(sid, result.history)
+    # LangGraph runs return history=[] — their checkpointer already saved.
+    if result.history:
+        sessions.save_history(sid, result.history)
     return {
         "question": result.question,
         "answer": result.answer,

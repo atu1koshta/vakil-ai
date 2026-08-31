@@ -425,10 +425,14 @@ export const PHASES = [
       {
         id: "s3b-langgraph",
         title: "3b — LangGraph port + retrieval grading",
-        status: "pending",
+        status: "in-progress",
         note: "Same loop as a graph: nodes, edges, checkpointed state. Adds grade-retrieval → rewrite-and-retry (corrective RAG).",
         components: [
-          { name: "graph port of the loop", status: "pending" },
+          {
+            name: "graph port of the loop",
+            status: "done",
+            note: "StateGraph + ToolNode + tools_condition; @tool annotations derive the schemas tools.py writes by hand; MemorySaver thread_id = session_id replaces sessions.py; agent.kind in config.yaml / ?agent= switches loops",
+          },
           { name: "retrieval sufficiency grading", status: "pending" },
         ],
       },

@@ -71,6 +71,7 @@ class HandRolledAgent(Agent):
         profile: str | None = None,
         max_steps: int = 6,
         history: list[dict] | None = None,
+        session_id: str | None = None,  # unused: caller keeps history via sessions.py
     ) -> AgentResult:
         max_steps = max(1, min(max_steps, MAX_STEPS_CAP))
         cfg = get_chat_config(model)
