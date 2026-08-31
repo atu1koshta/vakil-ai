@@ -67,6 +67,7 @@ generation:
 components:
   parser: docling
   metadata_extractor: regex
+  citation_extractor: regex # citation graph edges; backfill via app.citations.backfill
 
 profiles:
   nomic-default:

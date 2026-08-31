@@ -1,4 +1,4 @@
-"""The same three tools, declared the LangChain way: annotations, not dicts.
+"""The same tools as tools.py, declared the LangChain way: annotations, not dicts.
 
 Learning notes:
 - tools.py writes OpenAI JSON schemas BY HAND; here @tool derives the same
@@ -26,7 +26,7 @@ PREVIEW_CHARS = 400
 
 
 def build_tools(profile: str | None, trace: list[AgentStep]) -> list[BaseTool]:
-    """Three annotated tools bound to one run's profile + trace."""
+    """Annotated tools bound to one run's profile + trace."""
 
     def _record(name: str, args: dict) -> str:
         started = time.perf_counter()
@@ -74,6 +74,29 @@ def build_tools(profile: str | None, trace: list[AgentStep]) -> list[BaseTool]:
         )
 
     @tool
+    def get_cited(
+        doc_id: Annotated[str, "A doc_id seen in earlier tool results."],
+    ) -> str:
+        """List the earlier cases a judgment cites (its precedent basis),
+        from the citation graph. Cited cases that exist in the corpus include
+        their doc_id — follow up with read_document or get_cited on those to
+        walk the chain."""
+        return _record("get_cited", {"doc_id": doc_id})
+
+    @tool
+    def get_citing(
+        reference: Annotated[
+            str, "doc_id OR reporter citation, e.g. 'AIR 1973 SC 1461'."
+        ],
+    ) -> str:
+        """Reverse citation lookup: which judgments in the corpus cite a
+        given case. Pass either a doc_id from earlier results or a reporter
+        citation string like 'AIR 1973 SC 1461' or '(2017) 10 SCC 1'. Use for
+        'which cases followed/applied X?' questions — semantic search cannot
+        enumerate these."""
+        return _record("get_citing", {"reference": reference})
+
+    @tool
     def read_document(
         doc_id: Annotated[str, "A doc_id seen in earlier tool results."],
         section: Annotated[
@@ -85,4 +108,4 @@ def build_tools(profile: str | None, trace: list[AgentStep]) -> list[BaseTool]:
         sections, then call again with one section name."""
         return _record("read_document", {"doc_id": doc_id, "section": section})
 
-    return [search_chunks, filter_documents, read_document]
+    return [search_chunks, filter_documents, get_cited, get_citing, read_document]

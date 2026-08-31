@@ -254,6 +254,9 @@ class ComponentsConfig(BaseModel):
 
     parser: str = "docling"
     metadata_extractor: str = "regex"
+    # Citation-graph extractor (3c). NOT under PIPELINE_VERSION: edges are
+    # re-derived from persisted markdown via `python -m app.citations.backfill`.
+    citation_extractor: str = "regex"
 
 
 class AppConfig(BaseModel):

@@ -1,4 +1,4 @@
-"""The agent's three tools: schemas (OpenAI function format) + executors.
+"""The agent's tools: schemas (OpenAI function format) + executors.
 
 Plain module, not a base/impl/registry package: the toolset is fixed and
 there is no second plausible backend (same reasoning as rewrite.py). The
@@ -103,6 +103,53 @@ TOOL_SCHEMAS: list[dict] = [
     {
         "type": "function",
         "function": {
+            "name": "get_cited",
+            "description": (
+                "List the earlier cases a judgment cites (its precedent "
+                "basis), from the citation graph. Cited cases that exist in "
+                "the corpus include their doc_id — follow up with "
+                "read_document or get_cited on those to walk the chain."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "doc_id": {
+                        "type": "string",
+                        "description": "A doc_id seen in earlier tool results.",
+                    },
+                },
+                "required": ["doc_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_citing",
+            "description": (
+                "Reverse citation lookup: which judgments in the corpus cite "
+                "a given case. Pass either a doc_id from earlier results or "
+                "a reporter citation string like 'AIR 1973 SC 1461' or "
+                "'(2017) 10 SCC 1'. Use for 'which cases followed/applied "
+                "X?' questions — semantic search cannot enumerate these."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "reference": {
+                        "type": "string",
+                        "description": (
+                            "doc_id OR reporter citation, e.g. 'AIR 1973 SC 1461'."
+                        ),
+                    },
+                },
+                "required": ["reference"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "read_document",
             "description": (
                 "Read a full section of one judgment — use when a search "
@@ -152,9 +199,13 @@ def run_tool(name: str, args: dict, *, profile: str | None = None) -> str:
         )
     if name == "read_document":
         return _read_document(str(args.get("doc_id") or ""), args.get("section"))
+    if name == "get_cited":
+        return _get_cited(str(args.get("doc_id") or ""))
+    if name == "get_citing":
+        return _get_citing(str(args.get("reference") or ""))
     return (
         f"ERROR: unknown tool '{name}'. Available: search_chunks, "
-        "filter_documents, read_document."
+        "filter_documents, read_document, get_cited, get_citing."
     )
 
 
@@ -232,6 +283,97 @@ def _filter_documents(
         )
     if len(matched) > FILTER_MAX_ROWS:
         lines.append(f"...and {len(matched) - FILTER_MAX_ROWS} more")
+    return "\n".join(lines)
+
+
+CITE_MAX_ROWS = 25
+
+
+def _case_title(doc_id: str) -> str:
+    meta_path = OUTPUT_DIR / doc_id / "metadata.json"
+    if not meta_path.exists():
+        return "?"
+    return (json.loads(meta_path.read_text()).get("case_title") or "?")[
+        :FILTER_TITLE_CHARS
+    ]
+
+
+def _get_cited(doc_id: str) -> str:
+    from .. import registry  # local import: keeps module import cheap
+
+    if not doc_id or not (OUTPUT_DIR / doc_id).exists():
+        return (
+            f"ERROR: no document '{doc_id}'. Use filter_documents or "
+            "search_chunks to find valid doc_ids."
+        )
+    conn = registry.connect()
+    try:
+        rows = registry.edges_cited_by(conn, doc_id)
+    finally:
+        conn.close()
+    if not rows:
+        return (
+            f"No citation edges recorded for {doc_id}. Either it cites no "
+            "reported cases or edges were not extracted."
+        )
+    lines = [f"Cases cited by {doc_id} ({len(rows)} refs, most-cited first):"]
+    for row in rows[:CITE_MAX_ROWS]:
+        where = (
+            f"IN CORPUS: {row['resolved_doc_id']} — {_case_title(row['resolved_doc_id'])}"
+            if row["resolved_doc_id"]
+            else "not in corpus"
+        )
+        lines.append(
+            f"- {row['raw_text']} (cited {row['occurrences']}x) — {where}"
+        )
+    if len(rows) > CITE_MAX_ROWS:
+        lines.append(f"...and {len(rows) - CITE_MAX_ROWS} more")
+    return "\n".join(lines)
+
+
+def _get_citing(reference: str) -> str:
+    from .. import registry  # local import: keeps module import cheap
+    from ..citations import normalize_ref
+
+    if not reference.strip():
+        return "ERROR: get_citing needs a 'reference' (doc_id or citation string)."
+    conn = registry.connect()
+    try:
+        # doc_id? -> that doc's own reporter citations are the lookup keys.
+        if (OUTPUT_DIR / reference).exists():
+            refs = registry.citation_keys_for_doc(conn, reference)
+            label = f"{reference} — {_case_title(reference)}"
+            if not refs:
+                return (
+                    f"{reference} has no recorded reporter citation of its own, "
+                    "so reverse lookup by doc_id is not possible. Try a "
+                    "citation string like 'AIR 1973 SC 1461' if you have one."
+                )
+        else:
+            refs = [normalize_ref(reference)]
+            label = reference
+        # Dedup by citing doc (a doc may cite the target under two of its
+        # refs); rows arrive occurrences-DESC, first one wins.
+        seen: dict[str, object] = {}
+        for r in registry.docs_citing(conn, refs):
+            if r["citing_doc_id"] != reference and r["citing_doc_id"] not in seen:
+                seen[r["citing_doc_id"]] = r
+        rows = list(seen.values())
+    finally:
+        conn.close()
+    if not rows:
+        return (
+            f"No judgments in the corpus cite {label}. (The graph only "
+            "covers indexed documents — absence here is not absence in law.)"
+        )
+    lines = [f"Judgments citing {label} ({len(rows)}):"]
+    for row in rows[:CITE_MAX_ROWS]:
+        lines.append(
+            f"- {row['citing_doc_id']} — {_case_title(row['citing_doc_id'])} "
+            f"(cites it {row['occurrences']}x as {row['raw_text']})"
+        )
+    if len(rows) > CITE_MAX_ROWS:
+        lines.append(f"...and {len(rows) - CITE_MAX_ROWS} more")
     return "\n".join(lines)
 
 

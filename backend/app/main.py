@@ -294,6 +294,28 @@ def list_documents() -> list[dict]:
     return [dict(r) for r in registry.list_documents(registry.connect())]
 
 
+@app.get("/documents/{doc_id}/citations")
+def document_citations(doc_id: str) -> dict:
+    """Citation graph view of one document: its own reporter refs, what it
+    cites (with in-corpus resolution), and what in the corpus cites it."""
+    from . import registry
+
+    conn = registry.connect()
+    try:
+        if registry.find_by_doc_id(conn, doc_id) is None:
+            raise HTTPException(status_code=404, detail="Document not found.")
+        own = registry.citation_keys_for_doc(conn, doc_id)
+        cited = [dict(r) for r in registry.edges_cited_by(conn, doc_id)]
+        cited_by = [
+            dict(r)
+            for r in registry.docs_citing(conn, own)
+            if r["citing_doc_id"] != doc_id
+        ]
+    finally:
+        conn.close()
+    return {"doc_id": doc_id, "own": own, "cited": cited, "cited_by": cited_by}
+
+
 @app.get("/documents/{doc_id}/pdf")
 def document_pdf(doc_id: str) -> FileResponse:
     path = get_source_pdf(doc_id)

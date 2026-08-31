@@ -22,6 +22,7 @@ from pathlib import Path
 
 from . import registry
 from .chunker import get_chunker
+from .citations.store import extract_and_store
 from .config import get_profile
 from .metadata import get_metadata_extractor
 from .models import ChunkStats, DocumentMetadata, ProcessResult
@@ -88,6 +89,17 @@ def process_pdf(pdf_path: Path, original_name: str, *, force: bool = False) -> P
         chunk_count=result.stats.total_chunks,
         total_tokens=result.stats.total_tokens,
     )
+    # Citation graph (3c): additive, outside PIPELINE_VERSION — never fail a
+    # processed doc over edge extraction; backfill.py repairs any gap.
+    try:
+        extract_and_store(
+            reg,
+            doc_id=result.doc_id,
+            markdown=result.markdown,
+            doc_dir=OUTPUT_DIR / result.doc_id,
+        )
+    except Exception as e:
+        print(f"WARNING: citation extraction failed for {result.doc_id}: {e}")
     return result
 
 

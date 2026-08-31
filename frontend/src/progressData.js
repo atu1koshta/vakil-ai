@@ -443,12 +443,29 @@ export const PHASES = [
       {
         id: "s3c-citations",
         title: "3c — Citation graph traversal",
-        status: "pending",
+        status: "done",
         note: "Judgments cite judgments. Extract citation edges at pipeline time, expose get_citing/get_cited tools — the agent walks precedent chains, which flat RAG cannot.",
         components: [
-          { name: "citation edge extraction", status: "pending" },
-          { name: "edge table in vakil.db", status: "pending" },
-          { name: "traversal tools", status: "pending" },
+          {
+            name: "citation edge extraction",
+            status: "done",
+            note: "app/citations/ component package (base/regex/registry+factory); normalized reporter refs are the graph join key; refs in the first 2500 chars = the doc's OWN citation, excluded from edges; runs in process_pdf + python -m app.citations.backfill over existing markdown — no PIPELINE_VERSION bump, no Docling re-run",
+          },
+          {
+            name: "edge table in vakil.db",
+            status: "done",
+            note: "citation_edges (citing_doc_id, cited_ref, occurrences) + doc_citation_keys (ref → doc reverse lookup); delete+insert per doc = idempotent re-extraction; GET /documents/{id}/citations exposes own/cited/cited_by",
+          },
+          {
+            name: "traversal tools",
+            status: "done",
+            note: "get_cited(doc_id) = precedent basis with in-corpus resolution; get_citing(doc_id or reporter cite) = reverse lookup semantic search cannot enumerate; wired into both agent stacks + system prompt",
+          },
+          {
+            name: "backfill run over corpus",
+            status: "done",
+            note: "76 docs, 0 failed — 312 edges, 81 own-citation keys. Only 1 in-corpus resolution (stratified random selection rarely self-references); full precedent-chain payoff needs a corpus of related cases",
+          },
         ],
       },
     ],

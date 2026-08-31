@@ -41,6 +41,34 @@ def connect(db_path: Path | None = None) -> sqlite3.Connection:
         )
         """
     )
+    # Citation graph (3c). citation_edges = arrows OUT of a doc (what it
+    # cites, by normalized ref — the cited case need not be in the corpus).
+    # doc_citation_keys = a doc's OWN reporter citations (from its header),
+    # the reverse-lookup table that resolves a ref to an in-corpus doc.
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS citation_edges (
+            citing_doc_id TEXT NOT NULL,
+            cited_ref TEXT NOT NULL,
+            raw_text TEXT,
+            occurrences INTEGER NOT NULL DEFAULT 1,
+            UNIQUE(citing_doc_id, cited_ref)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS doc_citation_keys (
+            doc_id TEXT NOT NULL,
+            ref TEXT NOT NULL,
+            raw TEXT,
+            UNIQUE(doc_id, ref)
+        )
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_edges_cited_ref ON citation_edges(cited_ref)"
+    )
     return conn
 
 
@@ -105,6 +133,73 @@ def record_failed(
 
 def list_documents(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     return conn.execute("SELECT * FROM documents ORDER BY processed_at DESC").fetchall()
+
+
+def replace_citation_edges(
+    conn: sqlite3.Connection,
+    doc_id: str,
+    edges: list[tuple[str, str, int]],  # (cited_ref, raw_text, occurrences)
+) -> None:
+    """Delete + insert = idempotent: re-extracting a doc (backfill, tuned
+    regex) converges instead of accreting stale edges."""
+    conn.execute("DELETE FROM citation_edges WHERE citing_doc_id = ?", (doc_id,))
+    conn.executemany(
+        "INSERT OR IGNORE INTO citation_edges "
+        "(citing_doc_id, cited_ref, raw_text, occurrences) VALUES (?, ?, ?, ?)",
+        [(doc_id, ref, raw, occ) for ref, raw, occ in edges],
+    )
+    conn.commit()
+
+
+def replace_doc_citation_keys(
+    conn: sqlite3.Connection, doc_id: str, keys: list[tuple[str, str]]  # (ref, raw)
+) -> None:
+    conn.execute("DELETE FROM doc_citation_keys WHERE doc_id = ?", (doc_id,))
+    conn.executemany(
+        "INSERT OR IGNORE INTO doc_citation_keys (doc_id, ref, raw) VALUES (?, ?, ?)",
+        [(doc_id, ref, raw) for ref, raw in keys],
+    )
+    conn.commit()
+
+
+def edges_cited_by(conn: sqlite3.Connection, doc_id: str) -> list[sqlite3.Row]:
+    """Arrows out: what this doc cites, with in-corpus resolution when the
+    ref matches some doc's own citation key."""
+    return conn.execute(
+        """
+        SELECT e.cited_ref, e.raw_text, e.occurrences, k.doc_id AS resolved_doc_id
+        FROM citation_edges e
+        LEFT JOIN doc_citation_keys k ON k.ref = e.cited_ref
+        WHERE e.citing_doc_id = ?
+        ORDER BY e.occurrences DESC, e.cited_ref
+        """,
+        (doc_id,),
+    ).fetchall()
+
+
+def docs_citing(conn: sqlite3.Connection, refs: list[str]) -> list[sqlite3.Row]:
+    """Arrows in: corpus docs whose edges point at any of these refs."""
+    if not refs:
+        return []
+    placeholders = ",".join("?" for _ in refs)
+    return conn.execute(
+        f"""
+        SELECT citing_doc_id, cited_ref, raw_text, occurrences
+        FROM citation_edges
+        WHERE cited_ref IN ({placeholders})
+        ORDER BY occurrences DESC, citing_doc_id
+        """,
+        refs,
+    ).fetchall()
+
+
+def citation_keys_for_doc(conn: sqlite3.Connection, doc_id: str) -> list[str]:
+    return [
+        r["ref"]
+        for r in conn.execute(
+            "SELECT ref FROM doc_citation_keys WHERE doc_id = ?", (doc_id,)
+        ).fetchall()
+    ]
 
 
 def stale_documents(conn: sqlite3.Connection, current_version: int) -> list[sqlite3.Row]:
