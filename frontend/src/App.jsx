@@ -10,6 +10,7 @@ import AgentPanel from './components/AgentPanel.jsx';
 import CitationGraphPanel from './components/CitationGraphPanel.jsx';
 import DashboardPanel from './components/DashboardPanel.jsx';
 import ProgressPage from './components/ProgressPage.jsx';
+import GrowthPage from './components/GrowthPage.jsx';
 import IndexStatusBadge from './components/IndexStatusBadge.jsx';
 import ProfileBadge from './components/ProfileBadge.jsx';
 import { documentPdfUrl, listProfiles } from './api.js';
@@ -17,9 +18,10 @@ import { documentPdfUrl, listProfiles } from './api.js';
 const TABS = ['Dashboard', 'Search', 'Agent', 'Citations', 'Markdown', 'Metadata', 'Chunks'];
 
 export default function App() {
-  // Poor-man's routing: /progress renders the learning journal, everything
-  // else the studio. A real router earns its dependency at the third page.
+  // Poor-man's routing: static pages render by pathname, everything else the
+  // studio. All pages are flat and param-free, so a router still buys nothing.
   if (window.location.pathname === '/progress') return <ProgressPage />;
+  if (window.location.pathname === '/growth') return <GrowthPage />;
 
   return <Studio />;
 }
@@ -68,6 +70,12 @@ function Studio() {
             className="rounded border border-slate-200 px-2 py-1 text-xs font-medium text-slate-500 hover:border-sky-300 hover:text-sky-700"
           >
             Progress
+          </a>
+          <a
+            href="/growth"
+            className="rounded border border-slate-200 px-2 py-1 text-xs font-medium text-slate-500 hover:border-sky-300 hover:text-sky-700"
+          >
+            Growth
           </a>
         </div>
         {result && (

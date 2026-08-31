@@ -119,9 +119,14 @@ export default function ProgressPage() {
               done
             </p>
           </div>
-          <a href="/" className="text-xs font-medium text-sky-600 hover:text-sky-800">
-            ← back to studio
-          </a>
+          <div className="flex items-center gap-3 text-xs font-medium">
+            <a href="/growth" className="text-sky-600 hover:text-sky-800">
+              growth story
+            </a>
+            <a href="/" className="text-sky-600 hover:text-sky-800">
+              ← back to studio
+            </a>
+          </div>
         </div>
       </header>
 
